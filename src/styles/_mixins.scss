@@ -1,0 +1,291 @@
+// Mixins - Reusable SCSS Mixins
+@import './variables';
+
+// ============================================
+// RESPONSIVE BREAKPOINTS
+// ============================================
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == xs {
+    @media (max-width: $breakpoint-xs) { @content; }
+  }
+  @else if $breakpoint == sm {
+    @media (max-width: $breakpoint-sm) { @content; }
+  }
+  @else if $breakpoint == md {
+    @media (max-width: $breakpoint-md) { @content; }
+  }
+  @else if $breakpoint == lg {
+    @media (max-width: $breakpoint-lg) { @content; }
+  }
+  @else if $breakpoint == xl {
+    @media (max-width: $breakpoint-xl) { @content; }
+  }
+  @else if $breakpoint == 2xl {
+    @media (max-width: $breakpoint-2xl) { @content; }
+  }
+}
+
+// ============================================
+// FLEXBOX
+// ============================================
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+@mixin flex-row {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+// ============================================
+// GRADIENTS
+// ============================================
+@mixin gradient-primary {
+  background: $gradient-primary;
+}
+
+@mixin gradient-blue-ocean {
+  background: $gradient-blue-ocean;
+}
+
+@mixin gradient-overlay {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $overlay-gradient;
+    pointer-events: none;
+  }
+}
+
+// ============================================
+// HOVER EFFECTS
+// ============================================
+@mixin hover-lift {
+  transition: all $transition-base;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: $shadow-xl;
+  }
+}
+
+@mixin hover-scale {
+  transition: transform $transition-base;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+// ============================================
+// SHADOWS
+// ============================================
+@mixin card-shadow {
+  box-shadow: $card-shadow;
+  transition: box-shadow $transition-base;
+  
+  &:hover {
+    box-shadow: $card-hover-shadow;
+  }
+}
+
+@mixin primary-shadow {
+  box-shadow: $shadow-primary;
+}
+
+// ============================================
+// TEXT
+// ============================================
+@mixin truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@mixin gradient-text {
+  background: $gradient-blue-ocean;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// ============================================
+// BUTTONS
+// ============================================
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: $btn-padding-md;
+  border: none;
+  border-radius: $btn-border-radius;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  cursor: pointer;
+  transition: all $transition-base;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background: $gradient-primary;
+  color: $white;
+  box-shadow: $shadow-primary;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba($primary-600, 0.4);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  background: $gradient-secondary;
+  color: $white;
+  box-shadow: $shadow-secondary;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba($secondary-600, 0.4);
+  }
+}
+
+// ============================================
+// CARDS
+// ============================================
+@mixin card-base {
+  background: $white;
+  border-radius: $card-border-radius;
+  padding: $card-padding;
+  box-shadow: $card-shadow;
+  transition: all $transition-base;
+
+  &:hover {
+    box-shadow: $card-hover-shadow;
+    transform: translateY(-4px);
+  }
+}
+
+// ============================================
+// FORM INPUTS
+// ============================================
+@mixin input-base {
+  width: 100%;
+  padding: $input-padding;
+  border: 2px solid $input-border-color;
+  border-radius: $input-border-radius;
+  font-size: $font-size-base;
+  font-family: $font-primary;
+  transition: all $transition-base;
+  background: $white;
+
+  &:focus {
+    outline: none;
+    border-color: $input-focus-border-color;
+    box-shadow: $input-focus-shadow;
+  }
+
+  &:disabled {
+    background-color: $gray-100;
+    color: $text-disabled;
+    cursor: not-allowed;
+  }
+
+  &::placeholder {
+    color: $text-disabled;
+  }
+}
+
+// ============================================
+// GLASS MORPHISM
+// ============================================
+@mixin glass-effect {
+  background: rgba($white, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba($white, 0.2);
+  box-shadow: 0 8px 32px rgba($primary-900, 0.1);
+}
+
+// ============================================
+// POSITION
+// ============================================
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin cover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// ============================================
+// SCROLLBAR
+// ============================================
+@mixin custom-scrollbar($color: $primary-300) {
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $gray-100;
+    border-radius: $border-radius-sm;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $color;
+    border-radius: $border-radius-sm;
+    transition: background $transition-fast;
+
+    &:hover {
+      background: darken($color, 10%);
+    }
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: $color $gray-100;
+}

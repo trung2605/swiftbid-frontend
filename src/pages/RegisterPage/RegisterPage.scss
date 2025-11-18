@@ -1,0 +1,199 @@
+// Register Page Styles
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.register-page {
+  min-height: 100vh;
+  @include flex-center;
+  background: $gradient-primary;
+  padding: $spacing-2xl $spacing-lg;
+
+  .register-container {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .register-card {
+    background: $white;
+    border-radius: $border-radius-xl;
+    box-shadow: $shadow-2xl;
+    padding: $spacing-3xl;
+    animation: slideInUp 0.4s ease;
+
+    @media (max-width: $breakpoint-sm) {
+      padding: $spacing-xl;
+    }
+  }
+
+  .register-header {
+    text-align: center;
+    margin-bottom: $spacing-2xl;
+
+    h2 {
+      font-size: $font-size-4xl;
+      color: $gray-800;
+      margin-bottom: $spacing-sm;
+      font-weight: $font-weight-bold;
+    }
+
+    p {
+      color: $gray-600;
+      font-size: $font-size-base;
+    }
+  }
+
+  .register-form {
+    .error-message {
+      background-color: rgba($error-color, 0.1);
+      color: $error-color;
+      padding: $spacing-md $spacing-lg;
+      border-radius: $border-radius-md;
+      margin-bottom: $spacing-xl;
+      @include flex-row;
+      gap: $spacing-sm;
+      font-size: $font-size-sm;
+      border-left: 4px solid $error-color;
+
+      i {
+        font-size: 1.125rem;
+      }
+    }
+
+    .form-group {
+      margin-bottom: $spacing-xl;
+
+      label {
+        display: block;
+        margin-bottom: $spacing-sm;
+        color: $gray-700;
+        font-weight: $font-weight-semibold;
+        font-size: $font-size-sm;
+      }
+
+      input {
+        width: 100%;
+        padding: $spacing-md $spacing-lg;
+        border: 2px solid $gray-300;
+        border-radius: $border-radius-md;
+        font-size: $font-size-base;
+        transition: all $transition-base;
+
+        &:focus {
+          outline: none;
+          border-color: $accent-500;
+          box-shadow: 0 0 0 3px rgba($accent-500, 0.1);
+        }
+
+        &:disabled {
+          background-color: $gray-100;
+          cursor: not-allowed;
+        }
+
+        &::placeholder {
+          color: $gray-400;
+        }
+      }
+    }
+
+    .btn-register {
+      width: 100%;
+      padding: $spacing-lg;
+      background: $gradient-primary;
+      color: $white;
+      border: none;
+      border-radius: $border-radius-md;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      transition: all $transition-base;
+      margin-top: $spacing-sm;
+      margin-bottom: $spacing-xl;
+
+      &:hover:not(:disabled) {
+        @include hover-lift;
+      }
+
+      &:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+      }
+    }
+
+    .form-footer {
+      text-align: center;
+      padding-top: $spacing-lg;
+      border-top: 1px solid $gray-200;
+
+      p {
+        color: $gray-600;
+        font-size: $font-size-sm;
+        margin: 0;
+
+        .link {
+          color: $accent-500;
+          text-decoration: none;
+          font-weight: $font-weight-semibold;
+          transition: color $transition-fast;
+
+          &:hover {
+            color: $accent-600;
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+  }
+
+  .register-footer {
+    margin-top: $spacing-2xl;
+    padding-top: $spacing-xl;
+    border-top: 1px solid $gray-200;
+    text-align: center;
+
+    p {
+      color: $gray-600;
+      font-size: $font-size-xs;
+      line-height: $line-height-relaxed;
+      margin: 0;
+
+      a {
+        color: $accent-500;
+        text-decoration: none;
+        font-weight: $font-weight-medium;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+}
+
+// Animation
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: $breakpoint-sm) {
+  .register-page {
+    .register-header h2 {
+      font-size: $font-size-3xl;
+    }
+
+    .form-group {
+      margin-bottom: $spacing-lg;
+    }
+  }
+}

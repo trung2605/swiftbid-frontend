@@ -1,0 +1,210 @@
+// Sidebar Component Styles
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($black, 0.5);
+  z-index: 998;
+  display: none;
+
+  @media (max-width: 992px) {
+    display: block;
+  }
+}
+
+.sidebar {
+  width: 280px;
+  background: $white;
+  border-right: 1px solid $gray-300;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow-y: auto;
+  transition: transform $transition-base;
+
+  @media (max-width: 992px) {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 999;
+    transform: translateX(-100%);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+
+    &.open {
+      transform: translateX(0);
+    }
+  }
+
+  .sidebar-header {
+    padding: $spacing-xl;
+    border-bottom: 1px solid $gray-300;
+    @include flex-between;
+    position: sticky;
+    top: 0;
+    background: $white;
+    z-index: 10;
+
+    h2 {
+      margin: 0;
+      font-size: $font-size-xl;
+      color: $text-primary;
+      font-weight: $font-weight-semibold;
+    }
+
+    .sidebar-close {
+      display: none;
+      background: transparent;
+      border: none;
+      font-size: $font-size-xl;
+      color: $gray-600;
+      cursor: pointer;
+      padding: $spacing-sm;
+      transition: color $transition-base;
+
+      &:hover {
+        color: $text-primary;
+      }
+
+      @media (max-width: 992px) {
+        display: block;
+      }
+    }
+  }
+
+  .sidebar-content {
+    padding: $spacing-lg 0;
+  }
+
+  .sidebar-section {
+    border-bottom: 1px solid $gray-200;
+
+    .section-header {
+      width: 100%;
+      padding: $spacing-lg $spacing-xl;
+      background: transparent;
+      border: none;
+      @include flex-between;
+      cursor: pointer;
+      font-weight: $font-weight-semibold;
+      color: $text-primary;
+      font-size: 1rem;
+      transition: background-color $transition-fast;
+
+      &:hover {
+        background-color: $gray-100;
+      }
+
+      i {
+        color: $gray-600;
+        font-size: 0.875rem;
+      }
+    }
+
+    .section-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        padding: $spacing-sm $spacing-xl $spacing-sm $spacing-2xl;
+
+        a {
+          color: $gray-700;
+          text-decoration: none;
+          @include flex-between;
+          transition: color $transition-base;
+
+          &:hover {
+            color: $primary-600;
+          }
+
+          .count {
+            color: $gray-500;
+            font-size: 0.875rem;
+          }
+        }
+
+        .checkbox-label {
+          @include flex-row;
+          gap: $spacing-sm;
+          cursor: pointer;
+          color: $gray-700;
+
+          input[type="checkbox"] {
+            cursor: pointer;
+          }
+
+          &:hover {
+            color: $primary-600;
+          }
+        }
+      }
+    }
+
+    .price-filter {
+      padding: $spacing-lg $spacing-xl;
+
+      .price-inputs {
+        @include flex-row;
+        gap: $spacing-sm;
+        margin-bottom: $spacing-lg;
+
+        input {
+          flex: 1;
+          padding: $spacing-sm;
+          border: 1px solid $gray-300;
+          border-radius: $border-radius-sm;
+          font-size: $font-size-sm;
+
+          &:focus {
+            outline: none;
+            border-color: $primary-600;
+          }
+        }
+
+        span {
+          color: $gray-600;
+        }
+      }
+
+      .apply-btn {
+        width: 100%;
+        padding: $spacing-sm;
+        background-color: $primary-600;
+        color: $white;
+        border: none;
+        border-radius: $border-radius-md;
+        font-weight: $font-weight-semibold;
+        cursor: pointer;
+        transition: background-color $transition-base;
+
+        &:hover {
+          background-color: $primary-700;
+        }
+      }
+    }
+  }
+
+  /* Custom Scrollbar */
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $gray-100;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-400;
+    border-radius: 3px;
+
+    &:hover {
+      background: $gray-500;
+    }
+  }
+}

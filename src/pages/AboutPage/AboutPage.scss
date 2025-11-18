@@ -1,0 +1,101 @@
+// AboutPage Styles
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.about-page {
+  .page-header {
+    @include gradient-blue-ocean;
+    color: $white;
+    padding: $spacing-4xl $spacing-xl;
+    text-align: center;
+
+    h1 {
+      font-size: $font-size-5xl;
+      font-weight: $font-weight-bold;
+      margin-bottom: $spacing-lg;
+    }
+
+    p {
+      font-size: $font-size-xl;
+      opacity: 0.95;
+    }
+  }
+
+  .team-section {
+    padding: $spacing-4xl $spacing-xl;
+    background-color: $white;
+
+    .section-title {
+      text-align: center;
+      font-size: $font-size-4xl;
+      color: $text-primary;
+      margin-bottom: $spacing-3xl;
+      font-weight: $font-weight-bold;
+    }
+
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: $spacing-3xl;
+      max-width: 1200px;
+      margin: 0 auto;
+
+      .team-member {
+        text-align: center;
+        transition: transform $transition-base;
+
+        &:hover {
+          transform: translateY(-10px);
+        }
+
+        .member-image {
+          width: 200px;
+          height: 200px;
+          margin: 0 auto $spacing-xl;
+          border-radius: 50%;
+          overflow: hidden;
+          border: 4px solid $primary-600;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+        }
+
+        .member-name {
+          font-size: $font-size-2xl;
+          color: $text-primary;
+          margin-bottom: $spacing-sm;
+          font-weight: $font-weight-semibold;
+        }
+
+        .member-role {
+          color: $gray-600;
+          font-size: $font-size-base;
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .about-page {
+    .page-header {
+      padding: $spacing-3xl $spacing-lg;
+
+      h1 {
+        font-size: $font-size-3xl;
+      }
+    }
+
+    .team-section {
+      padding: $spacing-3xl $spacing-lg;
+
+      .section-title {
+        font-size: $font-size-3xl;
+      }
+    }
+  }
+}

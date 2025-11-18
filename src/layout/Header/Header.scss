@@ -1,0 +1,153 @@
+// Header Component Styles
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.header {
+  @include gradient-blue-ocean;
+  color: $white;
+  padding: $spacing-lg 0;
+  box-shadow: $shadow-md;
+
+  .header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 $spacing-xl;
+    @include flex-between;
+    gap: $spacing-2xl;
+  }
+
+  .header-logo {
+    @include flex-row;
+    gap: $spacing-sm;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $white;
+    text-decoration: none;
+    transition: transform $transition-base;
+
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-icon {
+      font-size: 2rem;
+    }
+  }
+
+  .header-actions {
+    @include flex-row;
+    gap: $spacing-2xl;
+    flex: 1;
+    justify-content: flex-end;
+  }
+
+  .header-search {
+    @include flex-row;
+    background: rgba($white, 0.2);
+    border-radius: 25px;
+    overflow: hidden;
+    transition: all $transition-base;
+    max-width: 400px;
+    flex: 1;
+
+    &:focus-within {
+      background: rgba($white, 0.3);
+      box-shadow: 0 0 0 3px rgba($white, 0.2);
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      padding: $spacing-md $spacing-lg;
+      color: $white;
+      font-size: 0.9375rem;
+      width: 100%;
+      outline: none;
+
+      &::placeholder {
+        color: rgba($white, 0.7);
+      }
+    }
+
+    .search-btn {
+      background: transparent;
+      border: none;
+      color: $white;
+      padding: $spacing-md $spacing-lg;
+      cursor: pointer;
+      transition: transform $transition-fast;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  .header-user {
+    @include flex-row;
+    gap: $spacing-lg;
+
+    .user-link {
+      @include flex-row;
+      gap: $spacing-sm;
+      color: $white;
+      text-decoration: none;
+      padding: $spacing-sm $spacing-lg;
+      border-radius: $border-radius-md;
+      transition: background-color $transition-base;
+      position: relative;
+
+      &:hover {
+        background-color: rgba($white, 0.15);
+      }
+
+      i {
+        font-size: 1.125rem;
+      }
+
+      .cart-badge {
+        position: absolute;
+        top: 0;
+        right: 0;
+        background-color: $error-color;
+        color: $white;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-semibold;
+        padding: 0.125rem $spacing-xs;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .header {
+    .header-container {
+      flex-wrap: wrap;
+      gap: $spacing-lg;
+    }
+
+    .header-actions {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .header-search {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .header-user {
+      span:not(.cart-badge) {
+        display: none;
+      }
+    }
+  }
+}
