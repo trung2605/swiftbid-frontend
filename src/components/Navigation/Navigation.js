@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentUser } from '../../services/authService';
+import { getCurrentUser, getRoles } from '../../services/authService';
 import './Navigation.scss';
 
 /**
@@ -13,6 +13,7 @@ const Navigation = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
   const { isAuthenticated, logoutAction, user } = useAuth();
+  const [roles, setRoles] = useState([]);
   const navigate = useNavigate();
 
   const toggleMenu = () => {
@@ -44,6 +45,24 @@ const Navigation = () => {
 
     fetchUserDetails();
   }, [isAuthenticated, logoutAction]);
+
+  // Fetch user roles when authenticated
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (isAuthenticated) {
+        try {
+          const response = await getRoles();
+          setRoles(response.data);
+        } catch (error) {
+          console.error('Failed to fetch user roles:', error);
+        }
+      } else {
+        setRoles([]);
+      }
+    };
+
+    fetchUserRoles();
+  }, [isAuthenticated]);
 
   const handleLogout = () => {
     logoutAction();
@@ -80,6 +99,16 @@ const Navigation = () => {
               Auctions
             </Link>
           </li>
+          
+          {/* Show My Products for SELLER and ADMIN */}
+          {(roles.includes('SELLER') || roles.includes('ADMIN')) && (
+            <li className="nav-item">
+              <Link to="/my-products" className="nav-link" onClick={() => setIsMenuOpen(false)}>
+                My Products
+              </Link>
+            </li>
+          )}
+          
           <li className="nav-item">
             <Link to="/about" className="nav-link" onClick={() => setIsMenuOpen(false)}>
               About
@@ -90,6 +119,16 @@ const Navigation = () => {
               Contact
             </Link>
           </li>
+
+          {/* Show Create Auction for SELLER and ADMIN */}
+          {(roles.includes('SELLER') || roles.includes('ADMIN')) && (
+            <li className="nav-item">
+              <Link to="/create-auction" className="nav-link nav-link-primary" onClick={() => setIsMenuOpen(false)}>
+                <i className="fas fa-plus-circle"></i>
+                Create Auction
+              </Link>
+            </li>
+          )}
           
           {/* Authentication Section */}
           {!isAuthenticated ? (

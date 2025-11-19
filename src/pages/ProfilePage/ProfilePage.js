@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentUser } from '../../services/authService';
+import { getCurrentUser, becomeSeller, getRoles } from '../../services/authService';
 import apiClient from '../../config/api';
 import './ProfilePage.scss';
 
@@ -18,6 +18,9 @@ const ProfilePage = () => {
   const [success, setSuccess] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [upgrading, setUpgrading] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [roles, setRoles] = useState([]);
 
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -31,6 +34,7 @@ const ProfilePage = () => {
   // Fetch user details on mount
   useEffect(() => {
     fetchUserDetails();
+    fetchRoles();
   }, []);
 
   const fetchUserDetails = async () => {
@@ -54,6 +58,15 @@ const ProfilePage = () => {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await getRoles();
+      setRoles(response.data);
+    } catch (err) {
+      console.error('Failed to fetch roles:', err);
     }
   };
 
@@ -173,6 +186,33 @@ const ProfilePage = () => {
     }
   };
 
+  const handleBecomeSeller = async () => {
+    setUpgrading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await becomeSeller();
+      
+      // Update user details
+      await fetchUserDetails();
+      await fetchRoles();
+      
+      setSuccess(response.data.message || 'Nâng cấp tài khoản thành SELLER thành công!');
+      setShowUpgradeModal(false);
+      
+      setTimeout(() => setSuccess(''), 5000);
+    } catch (err) {
+      console.error('Failed to become seller:', err);
+      setError(
+        err.response?.data?.message ||
+        'Không thể nâng cấp tài khoản. Vui lòng thử lại.'
+      );
+    } finally {
+      setUpgrading(false);
+    }
+  };
+
   if (loading && !userDetails) {
     return (
       <div className="profile-page">
@@ -255,8 +295,91 @@ const ProfilePage = () => {
               <p className="avatar-hint">
                 Click vào ảnh để thay đổi (Max 5MB)
               </p>
+              
+              {/* Upgrade to Seller Button */}
+              {!roles.includes('SELLER') && !roles.includes('ADMIN') && (
+                <button
+                  className="btn-upgrade-seller"
+                  onClick={() => setShowUpgradeModal(true)}
+                  disabled={upgrading}
+                >
+                  <i className="fas fa-store"></i>
+                  Nâng cấp thành Seller
+                </button>
+              )}
             </div>
           </div>
+
+          {/* Upgrade Confirmation Modal */}
+          {showUpgradeModal && (
+            <div className="modal-overlay" onClick={() => setShowUpgradeModal(false)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h3>
+                    <i className="fas fa-store"></i>
+                    Nâng cấp tài khoản Seller
+                  </h3>
+                  <button 
+                    className="modal-close" 
+                    onClick={() => setShowUpgradeModal(false)}
+                  >
+                    <i className="fas fa-times"></i>
+                  </button>
+                </div>
+                <div className="modal-body">
+                  <p>Bạn có chắc chắn muốn nâng cấp tài khoản thành <strong>SELLER</strong>?</p>
+                  <div className="upgrade-benefits">
+                    <h4>Quyền lợi của Seller:</h4>
+                    <ul>
+                      <li>
+                        <i className="fas fa-check-circle"></i>
+                        Tạo và quản lý phiên đấu giá
+                      </li>
+                      <li>
+                        <i className="fas fa-check-circle"></i>
+                        Đăng bán sản phẩm của bạn
+                      </li>
+                      <li>
+                        <i className="fas fa-check-circle"></i>
+                        Theo dõi và quản lý giao dịch
+                      </li>
+                      <li>
+                        <i className="fas fa-check-circle"></i>
+                        Nhận thanh toán trực tiếp
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => setShowUpgradeModal(false)}
+                    disabled={upgrading}
+                  >
+                    <i className="fas fa-times"></i>
+                    Hủy bỏ
+                  </button>
+                  <button
+                    className="btn btn-primary"
+                    onClick={handleBecomeSeller}
+                    disabled={upgrading}
+                  >
+                    {upgrading ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i>
+                        Đang xử lý...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-check"></i>
+                        Xác nhận nâng cấp
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Form */}
           <div className="profile-form-section">

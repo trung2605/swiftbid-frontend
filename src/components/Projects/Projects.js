@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import auctionService from '../../services/auctionService';
+// THAY ĐỔI 1: Sử dụng Default Import
+import auctionService from '../../services/auctionService'; 
 import './Projects.scss';
 
 /**
@@ -21,8 +22,12 @@ const Projects = () => {
     try {
       setLoading(true);
       setError('');
-      const data = await auctionService.getAllAuctions();
+      
+      // THAY ĐỔI 2: Gọi hàm thông qua object 'auctionService'
+      // File service của bạn đã tự xử lý .data, nên chúng ta gán trực tiếp
+      const data = await auctionService.getFeaturedAuctions();
       setAuctions(data);
+      
     } catch (err) {
       console.error('Error fetching auctions:', err);
       setError('Không thể tải danh sách phiên đấu giá. Vui lòng thử lại sau.');
@@ -33,10 +38,10 @@ const Projects = () => {
 
   const handleViewDetails = async (auctionId) => {
     try {
-      // Fetch auction details before navigating
+      // THAY ĐỔI 3: Gọi hàm thông qua object 'auctionService'
       const details = await auctionService.getAuctionDetails(auctionId);
       console.log('Auction details:', details);
-      // Navigate to auction detail page (will implement later)
+      
       navigate(`/auctions/${auctionId}`);
     } catch (err) {
       console.error('Error fetching auction details:', err);
@@ -45,6 +50,7 @@ const Projects = () => {
   };
 
   const formatCurrency = (amount) => {
+    if (amount === null || amount === undefined) return "N/A";
     return new Intl.NumberFormat('vi-VN', {
       style: 'currency',
       currency: 'VND',
@@ -66,7 +72,8 @@ const Projects = () => {
     const statusMap = {
       PENDING: { label: 'Chờ bắt đầu', className: 'status-pending' },
       ACTIVE: { label: 'Đang diễn ra', className: 'status-active' },
-      COMPLETED: { label: 'Đã kết thúc', className: 'status-completed' },
+      // THAY ĐỔI 4: Đồng bộ 'ENDED' (từ backend) với 'COMPLETED' (trong code cũ)
+      ENDED: { label: 'Đã kết thúc', className: 'status-ended' }, 
       CANCELLED: { label: 'Đã hủy', className: 'status-cancelled' },
     };
     
@@ -127,7 +134,7 @@ const Projects = () => {
             </div>
             <div className="project-content">
               <h3 className="project-name">
-                {auction.productName || 'Unnamed Product'}
+                {auction.product?.name || 'Unnamed Product'}
               </h3>
               <p className="project-description">
                 {auction.product?.description || 'Không có mô tả'}
@@ -160,7 +167,8 @@ const Projects = () => {
                 <button 
                   className="project-btn"
                   onClick={() => handleViewDetails(auction.id)}
-                  disabled={auction.status === 'COMPLETED' || auction.status === 'CANCELLED'}
+                  // THAY ĐỔI 5: Đồng bộ 'ENDED'
+                  disabled={auction.status === 'ENDED' || auction.status === 'CANCELLED'}
                 >
                   {auction.status === 'ACTIVE' ? (
                     <>

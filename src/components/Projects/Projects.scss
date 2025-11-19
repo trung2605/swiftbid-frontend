@@ -21,7 +21,10 @@
     }
   }
 
-  .projects-loading {
+  // --- Các trạng thái Loading, Error, Empty (Giữ nguyên vì đã tốt) ---
+  .projects-loading,
+  .projects-error,
+  .projects-empty {
     text-align: center;
     padding: $spacing-4xl $spacing-3xl;
     color: $gray-600;
@@ -31,28 +34,16 @@
       margin-bottom: 1rem;
       display: block;
     }
-
     p {
       font-size: 1.125rem;
     }
   }
 
   .projects-error {
-    text-align: center;
-    padding: $spacing-4xl $spacing-3xl;
     color: $error-color;
-
-    i {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-      display: block;
-    }
-
     p {
-      font-size: 1.125rem;
       margin-bottom: $spacing-xl;
     }
-
     .retry-btn {
       padding: $spacing-md $spacing-xl;
       background-color: $primary-600;
@@ -72,20 +63,15 @@
   }
 
   .projects-empty {
-    text-align: center;
-    padding: $spacing-4xl $spacing-3xl;
     color: $gray-500;
-
     i {
       font-size: 4rem;
-      margin-bottom: 1rem;
-      display: block;
     }
-
     p {
       font-size: 1.25rem;
     }
   }
+  // --- Hết khối trạng thái ---
 
   .projects-grid {
     display: grid;
@@ -93,21 +79,30 @@
     gap: $spacing-2xl;
   }
 
+  // --- Tinh chỉnh Thẻ (Card) ---
   .project-card {
-    @include card-base;
+    background: $white;
+    border: 1px solid $gray-200; // Thay đổi 1: Thêm border tinh tế
+    border-radius: $border-radius-lg; // Thay đổi 2: Bo góc lớn hơn
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
     transition: all $transition-base;
+    display: flex; // Giúp footer luôn ở cuối
+    flex-direction: column;
 
     &:hover {
-      @include hover-lift;
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
     }
 
     .project-image {
       width: 100%;
-      height: 220px;
+      aspect-ratio: 16 / 10; // Thay đổi 3: Dùng aspect-ratio thay vì height cố định
       overflow: hidden;
-      background-color: $gray-200;
       position: relative;
-
+      // Bo góc trên
+      border-top-left-radius: $border-radius-lg;
+      border-top-right-radius: $border-radius-lg;
+      
       img {
         width: 100%;
         height: 100%;
@@ -125,52 +120,54 @@
         right: $spacing-lg;
         z-index: 1;
 
+        // Thay đổi 4: Làm lại huy hiệu trạng thái
         .status-badge {
-          padding: $spacing-sm $spacing-lg;
-          border-radius: 20px;
+          padding: $spacing-xs $spacing-lg; // Nhỏ gọn hơn
+          border-radius: $border-radius-pill; // Bo tròn (pill)
           font-size: $font-size-xs;
-          font-weight: $font-weight-bold;
-          text-transform: uppercase;
+          font-weight: $font-weight-semibold;
+          text-transform: capitalize; // Dùng chữ thường
           letter-spacing: 0.5px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          box-shadow: none; // Bỏ shadow
 
-          &.status-pending {
-            background-color: #f39c12;
-            color: #ffffff;
-          }
-
+          // (Giả sử bạn có $success-100, $warning-100...)
           &.status-active {
-            background-color: $success-color;
-            color: $white;
-            animation: pulse 2s infinite;
+            background-color: $success-100; // Nền xanh lá nhạt
+            color: $success-700; // Chữ xanh lá đậm
+            animation: pulse-light 2s infinite;
           }
-
-          &.status-completed {
-            background-color: #95a5a6;
-            color: #ffffff;
+          &.status-pending {
+            background-color: $warning-100;
+            color: $warning-700;
           }
-
+          &.status-ended { // Đổi tên từ completed -> ended
+            background-color: $gray-200;
+            color: $gray-700;
+          }
           &.status-cancelled {
-            background-color: #e74c3c;
-            color: #ffffff;
+            background-color: $error-100;
+            color: $error-700;
           }
-
           &.status-default {
-            background-color: #34495e;
-            color: #ffffff;
+            background-color: $gray-200;
+            color: $gray-700;
           }
         }
       }
     }
 
     .project-content {
-      padding: $spacing-xl;
+      padding: $spacing-lg; // Giảm padding 1 chút
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1; // Đảm bảo content lấp đầy
 
       .project-name {
         font-size: $font-size-xl;
         color: $text-primary;
-        margin-bottom: $spacing-md;
-        font-weight: $font-weight-semibold;
+        margin-bottom: $spacing-sm; // Giảm margin
+        font-weight: $font-weight-bold; // Tăng độ đậm
+        line-height: 1.3;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
@@ -179,10 +176,10 @@
       }
 
       .project-description {
-        color: $gray-600;
-        line-height: $line-height-relaxed;
-        margin-bottom: $spacing-xl;
-        font-size: 0.9375rem;
+        color: $gray-700; // Tăng độ đậm 1 chút
+        line-height: $line-height-normal;
+        margin-bottom: $spacing-lg;
+        font-size: $font-size-sm;
         display: -webkit-box;
         -webkit-line-clamp: 3;
         -webkit-box-orient: vertical;
@@ -190,39 +187,40 @@
         text-overflow: ellipsis;
       }
 
+      // Thay đổi 5: Loại bỏ hộp xám
       .project-info {
-        @include flex-column;
+        display: flex;
+        flex-direction: row; // Đổi sang row
+        justify-content: space-between; // Dàn đều
         gap: $spacing-md;
-        margin-bottom: $spacing-xl;
-        padding: $spacing-lg;
-        background-color: $gray-100;
-        border-radius: $border-radius-md;
-
+        margin-bottom: $spacing-lg;
+        padding: $spacing-lg 0; // Chỉ padding trên/dưới
+        border-top: 1px solid $gray-100; // Thêm đường phân cách mỏng
+        border-bottom: 1px solid $gray-100;
+        
         .info-item {
           @include flex-row;
-          gap: $spacing-md;
+          gap: $spacing-sm;
+          align-items: center;
 
           i {
             color: $primary-600;
-            font-size: 1.125rem;
-            width: 20px;
+            font-size: 1rem;
+            width: 16px;
             text-align: center;
           }
 
           > div {
             @include flex-column;
-            flex: 1;
-
             .info-label {
               font-size: $font-size-xs;
               color: $gray-600;
               text-transform: uppercase;
               letter-spacing: 0.5px;
-              margin-bottom: 0.125rem;
+              margin-bottom: 0;
             }
-
             .info-value {
-              font-size: $font-size-sm;
+              font-size: $font-size-base; // Tăng cỡ chữ
               color: $text-primary;
               font-weight: $font-weight-semibold;
             }
@@ -232,13 +230,13 @@
 
       .project-footer {
         @include flex-between;
-        padding-top: $spacing-lg;
-        border-top: 2px solid $gray-200;
+        margin-top: auto; // Thay đổi 6: Đẩy footer xuống dưới cùng
+        padding-top: $spacing-sm;
+        border-top: none; // Bỏ border-top
         gap: $spacing-lg;
 
         .bid-info {
           @include flex-column;
-
           .current-bid-label {
             font-size: $font-size-xs;
             color: $gray-600;
@@ -246,16 +244,15 @@
             letter-spacing: 0.5px;
             margin-bottom: 0.25rem;
           }
-
           .current-bid-amount {
             font-weight: $font-weight-bold;
-            color: $success-color;
+            color: $primary-600; // Thay đổi 7: Đổi màu giá sang màu chính
             font-size: $font-size-xl;
           }
         }
 
         .project-btn {
-          background: $gradient-blue-ocean;
+          background: $primary-600; // Thay đổi 8: Bỏ gradient, dùng màu solid
           color: $white;
           border: none;
           padding: $spacing-md $spacing-xl;
@@ -273,6 +270,7 @@
           }
 
           &:hover:not(:disabled) {
+            background: $primary-700; // Hover màu đậm hơn
             @include hover-lift;
           }
 
@@ -281,9 +279,10 @@
           }
 
           &:disabled {
-            background: $gray-500;
+            background: $gray-300; // Nút disabled sáng hơn
+            color: $gray-500;
             cursor: not-allowed;
-            opacity: 0.7;
+            opacity: 1;
           }
         }
       }
@@ -291,20 +290,20 @@
   }
 }
 
-// Pulse Animation for Active Status
-@keyframes pulse {
+// Animation mới cho huy hiệu "Active"
+@keyframes pulse-light {
   0% {
-    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.4);
+    background-color: $success-100;
   }
   50% {
-    box-shadow: 0 2px 16px rgba(39, 174, 96, 0.8);
+    background-color: $success-200;
   }
   100% {
-    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.4);
+    background-color: $success-100;
   }
 }
 
-// Responsive Design
+// Responsive Design (Giữ nguyên)
 @media (max-width: 768px) {
   .projects-container {
     padding: $spacing-2xl $spacing-lg;

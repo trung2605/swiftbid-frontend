@@ -51,18 +51,18 @@ export const logout = () => {
   delete apiClient.defaults.headers.common['Authorization'];
 };
 
-/**
- * Get current user profile
- * @returns {Promise} - Promise with user data
- */
 export const getCurrentUser = () => {
   return apiClient.get('/api/user-details/me');
 };
 
-/**
- * Check if user is authenticated
- * @returns {boolean}
- */
+export const becomeSeller = () => {
+  return apiClient.post('/api/account/become-seller');
+};
+
+export const getRoles = () => {
+  return apiClient.get('/api/account/roles');
+}
+
 export const isAuthenticated = () => {
   const token = localStorage.getItem('token');
   return !!token;

@@ -1,153 +1,193 @@
-// Header Component Styles
-@import '../../styles/variables';
-@import '../../styles/mixins';
+@import '../../styles/variables'; // Import biến màu của bạn nếu có
+
+// Màu dự phòng nếu bạn chưa có file variables
+$primary-color: #3b82f6; // Xanh dương hiện đại
+$text-dark: #1f2937;
+$text-gray: #6b7280;
+$bg-gray: #f3f4f6;
+$white: #ffffff;
+$border-color: #e5e7eb;
 
 .header {
-  @include gradient-blue-ocean;
-  color: $white;
-  padding: $spacing-lg 0;
-  box-shadow: $shadow-md;
+  background-color: rgba(255, 255, 255, 0.95); // Nền trắng hơi trong suốt
+  backdrop-filter: blur(10px); // Hiệu ứng mờ kính phía sau (Glassmorphism)
+  border-bottom: 1px solid $border-color;
+  position: sticky; // Dính chặt trên cùng
+  top: 0;
+  z-index: 1000; // Luôn nổi lên trên
+  height: 70px; // Chiều cao cố định
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 
   .header-container {
     max-width: 1400px;
+    width: 100%;
     margin: 0 auto;
-    padding: 0 $spacing-xl;
-    @include flex-between;
-    gap: $spacing-2xl;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2rem;
   }
 
+  // --- 1. Logo Area ---
   .header-logo {
-    @include flex-row;
-    gap: $spacing-sm;
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
-    color: $white;
+    display: flex;
+    align-items: center;
     text-decoration: none;
-    transition: transform $transition-base;
+    gap: 0.75rem;
+    flex-shrink: 0; // Không bị co lại khi màn hình nhỏ
 
-    &:hover {
-      transform: scale(1.05);
+    .logo-img {
+      height: 40px; // Chiều cao logo vừa phải
+      width: auto;
+      object-fit: contain;
     }
 
-    .logo-icon {
-      font-size: 2rem;
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: $primary-color;
+      letter-spacing: -0.5px;
     }
   }
 
-  .header-actions {
-    @include flex-row;
-    gap: $spacing-2xl;
+  // --- 2. Search Bar Area ---
+  .header-search-wrapper {
     flex: 1;
-    justify-content: flex-end;
-  }
+    max-width: 500px; // Giới hạn chiều rộng search bar
+    position: relative;
+    display: flex;
+    align-items: center;
 
-  .header-search {
-    @include flex-row;
-    background: rgba($white, 0.2);
-    border-radius: 25px;
-    overflow: hidden;
-    transition: all $transition-base;
-    max-width: 400px;
-    flex: 1;
-
-    &:focus-within {
-      background: rgba($white, 0.3);
-      box-shadow: 0 0 0 3px rgba($white, 0.2);
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      color: $text-gray;
+      font-size: 0.9rem;
+      pointer-events: none; // Để click xuyên qua icon vào input
     }
 
     .search-input {
-      background: transparent;
-      border: none;
-      padding: $spacing-md $spacing-lg;
-      color: $white;
-      font-size: 0.9375rem;
       width: 100%;
-      outline: none;
+      padding: 0.75rem 1rem 0.75rem 2.5rem; // Padding trái lớn để né icon
+      border-radius: 99px; // Bo tròn kiểu viên thuốc (Pill shape)
+      border: 1px solid transparent;
+      background-color: $bg-gray;
+      font-size: 0.95rem;
+      color: $text-dark;
+      transition: all 0.2s ease;
 
       &::placeholder {
-        color: rgba($white, 0.7);
-      }
-    }
-
-    .search-btn {
-      background: transparent;
-      border: none;
-      color: $white;
-      padding: $spacing-md $spacing-lg;
-      cursor: pointer;
-      transition: transform $transition-fast;
-
-      &:hover {
-        transform: scale(1.1);
+        color: #9ca3af;
       }
 
-      i {
-        font-size: 1rem;
+      &:focus {
+        outline: none;
+        background-color: $white;
+        border-color: $primary-color;
+        box-shadow: 0 0 0 3px rgba($primary-color, 0.1); // Hiệu ứng ring khi focus
       }
     }
   }
 
-  .header-user {
-    @include flex-row;
-    gap: $spacing-lg;
+  // --- 3. Actions Area ---
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-shrink: 0;
 
-    .user-link {
-      @include flex-row;
-      gap: $spacing-sm;
-      color: $white;
-      text-decoration: none;
-      padding: $spacing-sm $spacing-lg;
-      border-radius: $border-radius-md;
-      transition: background-color $transition-base;
+    // Các nút icon (Cart, Noti)
+    .action-btn {
       position: relative;
+      font-size: 1.25rem;
+      color: $text-dark;
+      text-decoration: none;
+      transition: color 0.2s;
+      padding: 5px;
 
       &:hover {
-        background-color: rgba($white, 0.15);
-      }
-
-      i {
-        font-size: 1.125rem;
+        color: $primary-color;
+        transform: scale(1.1);
       }
 
       .cart-badge {
         position: absolute;
-        top: 0;
-        right: 0;
-        background-color: $error-color;
-        color: $white;
-        font-size: $font-size-xs;
-        font-weight: $font-weight-semibold;
-        padding: 0.125rem $spacing-xs;
-        border-radius: 10px;
+        top: -2px;
+        right: -4px;
+        background-color: #ef4444; // Màu đỏ thông báo
+        color: white;
+        font-size: 0.7rem;
+        font-weight: bold;
         min-width: 18px;
-        text-align: center;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid $white;
+      }
+    }
+
+    // Avatar Placeholder
+    .user-avatar-link {
+      margin-left: 0.5rem;
+      text-decoration: none;
+      
+      .user-avatar-placeholder {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, $primary-color, adjust-hue($primary-color, 20deg));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        transition: transform 0.2s;
+
+        &:hover {
+           transform: translateY(-2px);
+           box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+      }
+    }
+
+    // Nút Đăng nhập / Đăng ký (Khi chưa login)
+    .auth-buttons {
+      display: flex;
+      gap: 1rem;
+
+      .btn-login {
+        text-decoration: none;
+        color: $text-dark;
+        font-weight: 600;
+        padding: 0.5rem 1rem;
+        &:hover { color: $primary-color; }
+      }
+
+      .btn-register {
+        text-decoration: none;
+        background-color: $primary-color;
+        color: white;
+        padding: 0.5rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background-color 0.2s;
+
+        &:hover {
+          background-color: darken($primary-color, 10%);
+        }
       }
     }
   }
 }
 
-// Responsive Design
+// Responsive
 @media (max-width: 768px) {
-  .header {
-    .header-container {
-      flex-wrap: wrap;
-      gap: $spacing-lg;
-    }
-
-    .header-actions {
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .header-search {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .header-user {
-      span:not(.cart-badge) {
-        display: none;
-      }
-    }
+  .header-search-wrapper {
+    display: none; // Ẩn thanh search trên mobile (hoặc chuyển thành icon click để mở)
   }
 }

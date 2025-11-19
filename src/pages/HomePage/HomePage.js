@@ -18,7 +18,10 @@ const HomePage = () => {
           </p>
           <div className="hero-actions">
             <button className="btn btn-primary">Browse Auctions</button>
-            <button className="btn btn-secondary">How It Works</button>
+            <button className="btn btn-secondary" >
+            <a href="/about" style={{ color: 'inherit', textDecoration: 'none' }}>
+               How It Works
+              </a></button>
           </div>
         </div>
         <div className="hero-image">
@@ -34,7 +37,7 @@ const HomePage = () => {
               <h3 className="stat-number">10,000+</h3>
               <p className="stat-label">Active Auctions</p>
             </div>
-            <div className="stat-item">
+            <div className="stat-item"> 
               <h3 className="stat-number">50,000+</h3>
               <p className="stat-label">Happy Users</p>
             </div>

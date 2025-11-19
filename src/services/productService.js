@@ -1,11 +1,11 @@
-import axios from '../config/axiosConfig';
+import apiClient from "../config/api";
 
 /**
  * Product Service
  * Handles all API calls related to products/auctions
  */
 
-const API_BASE_URL = '/api/products';
+const API_BASE_URL = "/api/products";
 
 const productService = {
   /**
@@ -14,10 +14,30 @@ const productService = {
    */
   getAllProducts: async () => {
     try {
-      const response = await axios.get(API_BASE_URL);
+      const response = await apiClient.get(API_BASE_URL);
       return response.data;
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
+      throw error;
+    }
+  },
+
+  getMyProducts: async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      if (token) {
+      }
+
+      const response = await apiClient.get(`${API_BASE_URL}/my-products`);
+
+      // Backend returns: { status: 200, data: [...], timestamp: '...' }
+      // So we need to access response.data.data for the actual array
+      const backendData = response.data;
+      const productsArray = backendData.data || backendData; // Try .data first, fallback to root
+
+      return Array.isArray(productsArray) ? productsArray : [];
+    } catch (error) {
       throw error;
     }
   },
@@ -29,7 +49,7 @@ const productService = {
    */
   getProductById: async (id) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`);
+      const response = await apiClient.get(`${API_BASE_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching product ${id}:`, error);
@@ -44,10 +64,10 @@ const productService = {
    */
   createProduct: async (productData) => {
     try {
-      const response = await axios.post(API_BASE_URL, productData);
+      const response = await apiClient.post(API_BASE_URL, productData);
       return response.data;
     } catch (error) {
-      console.error('Error creating product:', error);
+      console.error("Error creating product:", error);
       throw error;
     }
   },
@@ -60,7 +80,10 @@ const productService = {
    */
   updateProduct: async (id, productData) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/${id}`, productData);
+      const response = await apiClient.put(
+        `${API_BASE_URL}/${id}`,
+        productData
+      );
       return response.data;
     } catch (error) {
       console.error(`Error updating product ${id}:`, error);
@@ -75,8 +98,8 @@ const productService = {
    */
   deleteProduct: async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/${id}`);
-      return { success: true, message: 'Product deleted successfully' };
+      await apiClient.delete(`${API_BASE_URL}/${id}`);
+      return { success: true, message: "Product deleted successfully" };
     } catch (error) {
       console.error(`Error deleting product ${id}:`, error);
       throw error;
@@ -90,15 +113,15 @@ const productService = {
    */
   searchProducts: async (query) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/search`, {
-        params: { q: query }
+      const response = await apiClient.get(`${API_BASE_URL}/search`, {
+        params: { q: query },
       });
       return response.data;
     } catch (error) {
-      console.error('Error searching products:', error);
+      console.error("Error searching products:", error);
       throw error;
     }
-  }
+  },
 };
 
 export default productService;
