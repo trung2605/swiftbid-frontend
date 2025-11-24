@@ -4,9 +4,11 @@ import { AuthProvider } from './contexts/AuthContext';
 import MainLayout from './layout/MainLayout/MainLayout';
 import HomePage from './pages/HomePage/HomePage';
 import AboutPage from './pages/AboutPage/AboutPage';
+import ContactPage from './pages/ContactPage/ContactPage';
 import ProfilePage from './pages/ProfilePage/ProfilePage';
 import CreateAuctionPage from './pages/CreateAuctionPage/CreateAuctionPage';
 import AuctionsPage from './pages/AuctionsPage/AuctionsPage';
+import AuctionDetailPage from './pages/AuctionDetailPage/AuctionDetailPage';
 import MyProductsPage from './pages/MyProductsPage/MyProductsPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
@@ -30,14 +32,12 @@ function App() {
           <Route path="/" element={<MainLayout />}>
             <Route index element={<HomePage />} />
             <Route path="about" element={<AboutPage />} />
+            <Route path="contact" element={<ContactPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="my-products" element={<MyProductsPage />} />
             <Route path="create-auction" element={<CreateAuctionPage />} />
             <Route path="auctions" element={<AuctionsPage />} />
-            <Route path="contact" element={<div style={{ padding: '3rem', textAlign: 'center' }}>
-              <h1>Contact Page</h1>
-              <p>Coming soon...</p>
-            </div>} />
+            <Route path="auctions/:id" element={<AuctionDetailPage />} />
           </Route>
 
           {/* 404 Not Found */}

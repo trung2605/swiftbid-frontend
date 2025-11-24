@@ -475,6 +475,49 @@
         }
       }
 
+      // Banner Image Preview
+      .image-preview-banner {
+        position: relative;
+        margin-top: $spacing-lg;
+        border-radius: $border-radius-lg;
+        overflow: hidden;
+        box-shadow: $shadow-md;
+        max-width: 100%;
+
+        img {
+          width: 100%;
+          height: auto;
+          max-height: 300px;
+          object-fit: cover;
+          display: block;
+        }
+
+        .btn-remove-image {
+          position: absolute;
+          top: $spacing-md;
+          right: $spacing-md;
+          width: 36px;
+          height: 36px;
+          @include flex-center;
+          background: rgba($error-600, 0.9);
+          color: $white;
+          border: none;
+          border-radius: $border-radius-full;
+          cursor: pointer;
+          transition: all $transition-fast;
+          backdrop-filter: blur(4px);
+
+          &:hover {
+            background: $error-700;
+            transform: scale(1.1);
+          }
+
+          i {
+            font-size: $font-size-lg;
+          }
+        }
+      }
+
       // Form Actions
       .form-actions {
         @include flex-row;

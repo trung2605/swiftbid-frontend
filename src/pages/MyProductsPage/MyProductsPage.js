@@ -33,6 +33,10 @@ const MyProductsPage = () => {
   const [imagePreview, setImagePreview] = useState("");
   const [creating, setCreating] = useState(false);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const productsPerPage = 9;
+
   // Roles Fetching
   useEffect(() => {
     const fetchUserRoles = async () => {
@@ -164,35 +168,23 @@ const MyProductsPage = () => {
     setSuccess("");
 
     try {
-      let imageUrl = productData.imageUrl;
+      // Create FormData to send multipart/form-data
+      const formData = new FormData();
+      formData.append("name", productData.name.trim());
+      formData.append("description", productData.description.trim());
+      formData.append("initialPrice", productData.initialPrice);
 
-      // Upload image if file is selected
+      // Append image file if selected
       if (imageFile) {
-        const formData = new FormData();
-        formData.append("file", imageFile);
-
-        const uploadResponse = await apiClient.post(
-          "/api/products/upload-image",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        imageUrl = uploadResponse.data.imageUrl || uploadResponse.data;
+        formData.append("image", imageFile);
       }
 
-      // Create product
-      const payload = {
-        name: productData.name,
-        description: productData.description,
-        initialPrice: parseFloat(productData.initialPrice),
-        imageUrl: imageUrl,
-      };
-
-      await productService.createProduct(payload);
+      // Send request to backend - Backend will automatically assign seller from JWT token
+      const response = await apiClient.post("/api/products", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setSuccess("Tạo sản phẩm thành công!");
 
@@ -218,6 +210,7 @@ const MyProductsPage = () => {
       console.error("Failed to create product:", err);
       setError(
         err.response?.data?.message ||
+          err.response?.data?.error ||
           "Không thể tạo sản phẩm. Vui lòng thử lại."
       );
     } finally {
@@ -263,6 +256,31 @@ const MyProductsPage = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  // Pagination calculations
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+  const totalPages = Math.ceil(products.length / productsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -322,18 +340,18 @@ const MyProductsPage = () => {
               </div>
             ) : (
               <div className="products-grid">
-                {products.map((product) => (
+                {currentProducts.map((product) => (
                   <div key={product.id} className="product-card">
                     <div className="card-image">
                       <img
                         src={
                           product.imageUrl ||
-                          "https://via.placeholder.com/300x200?text=No+Image"
+                          "https://media1.thehungryjpeg.com/thumbs2/ori_3880868_5glgyjhuq6907sry3ecj3rlv5smguypju3eysdp6_white-boxes-mockup-blank-product-package-3d-in-various-size-templates.jpg"
                         }
                         alt={product.name}
                         onError={(e) => {
                           e.target.src =
-                            "https://via.placeholder.com/300x200?text=No+Image";
+                            "https://media1.thehungryjpeg.com/thumbs2/ori_3880868_5glgyjhuq6907sry3ecj3rlv5smguypju3eysdp6_white-boxes-mockup-blank-product-package-3d-in-various-size-templates.jpg";
                         }}
                       />
                     </div>
@@ -376,6 +394,63 @@ const MyProductsPage = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination */}
+            {products.length > productsPerPage && (
+              <div className="pagination">
+                <button
+                  className="pagination-btn"
+                  onClick={handlePreviousPage}
+                  disabled={currentPage === 1}
+                >
+                  <i className="fas fa-chevron-left"></i>
+                  Trước
+                </button>
+
+                <div className="pagination-numbers">
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNumber = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNumber === 1 ||
+                      pageNumber === totalPages ||
+                      (pageNumber >= currentPage - 1 && pageNumber <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNumber}
+                          className={`pagination-number ${
+                            currentPage === pageNumber ? "active" : ""
+                          }`}
+                          onClick={() => handlePageChange(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      );
+                    } else if (
+                      pageNumber === currentPage - 2 ||
+                      pageNumber === currentPage + 2
+                    ) {
+                      return (
+                        <span key={pageNumber} className="pagination-ellipsis">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <button
+                  className="pagination-btn"
+                  onClick={handleNextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Sau
+                  <i className="fas fa-chevron-right"></i>
+                </button>
               </div>
             )}
           </>

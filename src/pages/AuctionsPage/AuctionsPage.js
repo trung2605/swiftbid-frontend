@@ -26,20 +26,6 @@ const AuctionsPage = () => {
   const [itemsPerPage] = useState(12);
   const [totalPages, setTotalPages] = useState(1);
 
-  const categories = [
-    // { value: 'ALL', label: 'Tất cả', icon: 'fa-th' },
-    // { value: 'ELECTRONICS', label: 'Điện tử', icon: 'fa-laptop' },
-    // { value: 'FASHION', label: 'Thời trang', icon: 'fa-tshirt' },
-    // { value: 'HOME', label: 'Đồ gia dụng', icon: 'fa-home' },
-    // { value: 'SPORTS', label: 'Thể thao', icon: 'fa-futbol' },
-    // { value: 'BOOKS', label: 'Sách', icon: 'fa-book' },
-    // { value: 'TOYS', label: 'Đồ chơi', icon: 'fa-gamepad' },
-    // { value: 'AUTOMOTIVE', label: 'Ô tô - Xe máy', icon: 'fa-car' },
-    // { value: 'ART', label: 'Nghệ thuật', icon: 'fa-palette' },
-    // { value: 'COLLECTIBLES', label: 'Sưu tầm', icon: 'fa-gem' },
-    // { value: 'OTHER', label: 'Khác', icon: 'fa-ellipsis-h' },
-  ];
-
   const sortOptions = [
     { value: 'NEWEST', label: 'Mới nhất' },
     { value: 'ENDING_SOON', label: 'Sắp kết thúc' },
@@ -134,11 +120,6 @@ const AuctionsPage = () => {
       default:
         return sorted;
     }
-  };
-
-  const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
-    setCurrentPage(1);
   };
 
   const handleStatusChange = (e) => {
@@ -243,22 +224,6 @@ const AuctionsPage = () => {
           </form>
         </div>
 
-        {/* Category Filter */}
-        <div className="category-filter">
-          <div className="category-grid">
-            {categories.map((category) => (
-              <button
-                key={category.value}
-                className={`category-item ${selectedCategory === category.value ? 'active' : ''}`}
-                onClick={() => handleCategoryChange(category.value)}
-              >
-                <i className={`fas ${category.icon}`}></i>
-                <span>{category.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* Filters and Sort */}
         <div className="controls-section">
           <div className="controls-left">
@@ -300,14 +265,6 @@ const AuctionsPage = () => {
               </select>
             </div>
           </div>
-        </div>
-
-        {/* Results Count */}
-        <div className="results-info">
-          <p>
-            Hiển thị <strong>{auctions.length}</strong> kết quả
-            {selectedCategory !== 'ALL' && ` trong danh mục "${categories.find(c => c.value === selectedCategory)?.label}"`}
-          </p>
         </div>
 
         {/* Error Message */}
@@ -360,7 +317,7 @@ const AuctionsPage = () => {
                     >
                       <div className="card-image">
                         <img
-                          src={auction.images?.[0] || 'https://www.shutterstock.com/image-vector/img-vector-icon-design-on-260nw-2164648583.jpg'}
+                          src={auction.bannerImageUrl || 'https://www.shutterstock.com/image-vector/img-vector-icon-design-on-260nw-2164648583.jpg'}
                           alt={auction.productName || 'Product'}
                           onError={(e) => {
                             e.target.src = 'https://www.shutterstock.com/image-vector/img-vector-icon-design-on-260nw-2164648583.jpg';

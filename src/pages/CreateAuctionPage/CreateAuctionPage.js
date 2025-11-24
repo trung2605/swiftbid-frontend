@@ -34,8 +34,11 @@ const CreateAuctionPage = () => {
     auctionDescription: '',
     targetAudience: '',
     additionalTerms: '',
-    bannerImageUrl: '',
   });
+
+  // Banner Image File
+  const [bannerFile, setBannerFile] = useState(null);
+  const [bannerPreview, setBannerPreview] = useState('');
 
   // Roles Fetching
   useEffect(() => {
@@ -151,6 +154,31 @@ const CreateAuctionPage = () => {
     }));
   };
 
+  const handleBannerChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type and size
+    if (!file.type.startsWith('image/')) {
+      setError('Chỉ chấp nhận file ảnh');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Kích thước ảnh không được vượt quá 5MB');
+      return;
+    }
+
+    setBannerFile(file);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setBannerPreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+    setError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -175,22 +203,32 @@ const CreateAuctionPage = () => {
         return;
       }
 
-      // Create auction payload aligned with backend
-      const auctionPayload = {
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
-        currentHighestBidAmount: parseFloat(auctionData.currentHighestBidAmount),
-        status: 'PENDING',
-        auctionDetail: {
-          auctionDescription: auctionDetailData.auctionDescription || null,
-          targetAudience: auctionDetailData.targetAudience || null,
-          additionalTerms: auctionDetailData.additionalTerms || null,
-          bannerImageUrl: auctionDetailData.bannerImageUrl || null,
-        }
-      };
+      // Create FormData for multipart/form-data request
+      const formData = new FormData();
+      
+      // Add basic auction fields
+      formData.append('productId', selectedProduct.id);
+      formData.append('startTime', startTime.toISOString());
+      formData.append('endTime', endTime.toISOString());
+      
+      // Add auction detail fields (optional)
+      if (auctionDetailData.auctionDescription) {
+        formData.append('auctionDescription', auctionDetailData.auctionDescription);
+      }
+      if (auctionDetailData.targetAudience) {
+        formData.append('targetAudience', auctionDetailData.targetAudience);
+      }
+      if (auctionDetailData.additionalTerms) {
+        formData.append('additionalTerms', auctionDetailData.additionalTerms);
+      }
+      
+      // Add banner image if selected
+      if (bannerFile) {
+        formData.append('bannerImage', bannerFile);
+      }
 
-      // Call API to create auction with productId
-      await auctionService.createAuction(auctionPayload, selectedProduct.id);
+      // Call API to create auction
+      await auctionService.createAuction(formData);
 
       setSuccess('Tạo phiên đấu giá thành công!');
       
@@ -438,18 +476,41 @@ const CreateAuctionPage = () => {
                   </div>
 
                   <div className="form-group">
-                    <label htmlFor="bannerImageUrl">
+                    <label>
                       <i className="fas fa-image"></i>
-                      URL ảnh banner
+                      Ảnh banner
+                      <span className="hint">(Tùy chọn, dưới 5MB)</span>
                     </label>
-                    <input
-                      type="url"
-                      id="bannerImageUrl"
-                      name="bannerImageUrl"
-                      value={auctionDetailData.bannerImageUrl}
-                      onChange={handleDetailChange}
-                      placeholder="https://example.com/banner.jpg"
-                    />
+
+                    <div className="image-upload-area">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerChange}
+                        id="banner-upload"
+                        style={{ display: 'none' }}
+                      />
+                      <label htmlFor="banner-upload" className="upload-button">
+                        <i className="fas fa-cloud-upload-alt"></i>
+                        {bannerPreview ? 'Thay đổi ảnh banner' : 'Tải ảnh banner lên'}
+                      </label>
+                    </div>
+
+                    {bannerPreview && (
+                      <div className="image-preview-banner">
+                        <img src={bannerPreview} alt="Banner Preview" />
+                        <button
+                          type="button"
+                          className="btn-remove-image"
+                          onClick={() => {
+                            setBannerFile(null);
+                            setBannerPreview('');
+                          }}
+                        >
+                          <i className="fas fa-times"></i>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 

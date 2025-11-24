@@ -17,6 +17,8 @@ $primary-700: #1976d2;
 $primary-800: #1565c0;
 $primary-900: #0d47a1;
 
+$primary-blue: #2196f3;
+
 // Primary Color Shortcuts
 $primary-color: $primary-600;
 $primary-dark: $primary-800;
@@ -91,6 +93,9 @@ $text-secondary: $gray-700;
 $text-tertiary: $gray-600;
 $text-disabled: $gray-400;
 $text-white: $white;
+$text-dark: $gray-900;      // Alias for darker text
+$text-light: $gray-600;     // Alias for lighter text
+$text-color: $gray-900;
 
 // Border Colors
 $border-light: $gray-200;

@@ -1,4 +1,4 @@
-import axios from '../config/axiosConfig';
+import apiClient from '../config/api';
 
 /**
  * Auction Service
@@ -14,7 +14,7 @@ const auctionService = {
    */
   getAllAuctions: async () => {
     try {
-      const response = await axios.get(API_BASE_URL);
+      const response = await apiClient.get(API_BASE_URL);
       return response.data;
     } catch (error) {
       console.error('Error fetching auctions:', error);
@@ -29,7 +29,7 @@ const auctionService = {
    */
   getAuctionDetails: async (auctionId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${auctionId}/details`);
+      const response = await apiClient.get(`${API_BASE_URL}/${auctionId}/details`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching auction details for ${auctionId}:`, error);
@@ -44,7 +44,7 @@ const auctionService = {
    */
   getAuctionById: async (id) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`);
+      const response = await apiClient.get(`${API_BASE_URL}/${id}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching auction ${id}:`, error);
@@ -54,14 +54,15 @@ const auctionService = {
 
   /**
    * Create a new auction
-   * @param {Object} auctionData - Auction data to create
-   * @param {number} productId - Product ID for the auction
+   * @param {FormData} formData - FormData containing auction data and banner image
    * @returns {Promise} - Promise with created auction data
    */
-  createAuction: async (auctionData, productId) => {
+  createAuction: async (formData) => {
     try {
-      const response = await axios.post(API_BASE_URL, auctionData, {
-        params: { productId }
+      const response = await apiClient.post(API_BASE_URL, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       return response.data;
     } catch (error) {
@@ -78,7 +79,7 @@ const auctionService = {
    */
   updateAuction: async (id, auctionData) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/${id}`, auctionData);
+      const response = await apiClient.put(`${API_BASE_URL}/${id}`, auctionData);
       return response.data;
     } catch (error) {
       console.error(`Error updating auction ${id}:`, error);
@@ -93,7 +94,7 @@ const auctionService = {
    */
   deleteAuction: async (id) => {
     try {
-      await axios.delete(`${API_BASE_URL}/${id}`);
+      await apiClient.delete(`${API_BASE_URL}/${id}`);
       return { success: true, message: 'Auction deleted successfully' };
     } catch (error) {
       console.error(`Error deleting auction ${id}:`, error);
@@ -107,7 +108,7 @@ const auctionService = {
    */
   getActiveAuctions: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/active`);
+      const response = await apiClient.get(`${API_BASE_URL}/active`);
       return response.data;
     } catch (error) {
       console.error('Error fetching active auctions:', error);
@@ -117,7 +118,7 @@ const auctionService = {
 
   getFeaturedAuctions: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/featured`);
+      const response = await apiClient.get(`${API_BASE_URL}/featured`);
       return response.data;
     } catch (error) {
       console.error('Error fetching featured auctions:', error);
