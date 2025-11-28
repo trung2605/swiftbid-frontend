@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import auctionService from '../../services/auctionService';
 import './AuctionDetailPage.scss';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /**
  * Auction Detail Page Component
@@ -222,15 +224,19 @@ const AuctionDetailPage = () => {
             <i className="fas fa-info-circle"></i>
             Mô tả sản phẩm
           </h2>
-          <p>{auction.product?.description || 'Không có mô tả'}</p>
-          
+
+          <ReactMarkdown remarkPlugins={[remarkGfm]} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+            {auction.product?.description || 'Không có mô tả'}
+          </ReactMarkdown>      
           {/* Product Details */}
           {auction.product && (
             <div className="product-details">
-              <div className="detail-row">
-                <span className="label">ID sản phẩm:</span>
-                <span className="value">#{auction.product.id}</span>
-              </div>
+              {auction.product.category && (
+                <div className="detail-row">
+                  <span className="label">Danh mục:</span>
+                  <span className="value">{auction.product.category}</span>
+                </div>
+              )}
               {auction.product.createdAt && (
                 <div className="detail-row">
                   <span className="label">Ngày tạo:</span>

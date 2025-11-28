@@ -181,7 +181,7 @@ const About = () => {
                 <div className="feature-icon" style={{ color: feature.color }}>
                   <i className={`fas ${feature.icon}`}></i>
                 </div>
-                <div className="icon-background" style={{ backgroundColor: `${feature.color}20` }}></div>
+                <div className="icon-background" style={{ backgroundColor: `${feature.color}40` }}></div>
               </div>
               <h3 className="feature-title">{feature.title}</h3>
               <p className="feature-description">{feature.description}</p>

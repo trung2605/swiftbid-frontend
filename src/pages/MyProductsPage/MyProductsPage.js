@@ -5,6 +5,8 @@ import { getRoles } from "../../services/authService";
 import productService from "../../services/productService";
 import apiClient from "../../config/api";
 import "./MyProductsPage.scss";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 /**
  * My Products Page Component
@@ -360,7 +362,9 @@ const MyProductsPage = () => {
                       <h3 className="product-name">{product.name}</h3>
 
                       <p className="product-description">
-                        {product.description}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                          {product.description}
+                        </ReactMarkdown>
                       </p>
 
                       <div className="product-info">

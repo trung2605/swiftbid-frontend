@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import auctionService from '../../services/auctionService';
 import './AuctionsPage.scss';
 
 /**
- * Auctions Page Component
- * Display all auctions with filtering, sorting, and pagination
+ * Auctions Page Component with Enhanced Animations
+ * Display all auctions with filtering, sorting, pagination and scroll animations
  */
 const AuctionsPage = () => {
   const navigate = useNavigate();
@@ -14,6 +14,13 @@ const AuctionsPage = () => {
   const [auctions, setAuctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [visibleCards, setVisibleCards] = useState(new Set());
+  
+  // Refs for intersection observer
+  const cardRefs = useRef([]);
+  const headerRef = useRef(null);
+  const searchRef = useRef(null);
+  const controlsRef = useRef(null);
   
   // Filters and sorting
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || 'ALL');
@@ -52,6 +59,44 @@ const AuctionsPage = () => {
     if (currentPage !== 1) params.set('page', currentPage);
     setSearchParams(params);
   }, [selectedCategory, selectedStatus, sortBy, currentPage, searchQuery]);
+
+  // Intersection Observer for card animations
+  useEffect(() => {
+    const observerOptions = {
+      root: null,
+      rootMargin: '50px',
+      threshold: 0.1
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = entry.target.dataset.index;
+          setVisibleCards(prev => new Set([...prev, index]));
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    cardRefs.current.forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
+    // Observe header, search, controls
+    if (headerRef.current) observer.observe(headerRef.current);
+    if (searchRef.current) observer.observe(searchRef.current);
+    if (controlsRef.current) observer.observe(controlsRef.current);
+
+    return () => {
+      cardRefs.current.forEach(ref => {
+        if (ref) observer.unobserve(ref);
+      });
+      if (headerRef.current) observer.unobserve(headerRef.current);
+      if (searchRef.current) observer.unobserve(searchRef.current);
+      if (controlsRef.current) observer.unobserve(controlsRef.current);
+    };
+  }, [auctions]);
 
   const fetchAuctions = async () => {
     setLoading(true);
@@ -196,101 +241,157 @@ const AuctionsPage = () => {
 
   return (
     <div className="auctions-page">
+      {/* Animated Background */}
+      <div className="animated-background">
+        <div className="bg-shape shape-1"></div>
+        <div className="bg-shape shape-2"></div>
+        <div className="bg-shape shape-3"></div>
+      </div>
+
       <div className="auctions-container">
         {/* Page Header */}
-        <div className="page-header">
-          <h1>
-            <i className="fas fa-gavel"></i>
-            Phiên Đấu Giá
-          </h1>
-          <p>Khám phá và tham gia các phiên đấu giá hấp dẫn</p>
+        <div ref={headerRef} className="page-header animate-on-scroll">
+          <div className="header-content">
+            <h1>
+              <i className="fas fa-gavel"></i>
+              <span className="gradient-text">Phiên Đấu Giá</span>
+            </h1>
+            <p className="subtitle">Khám phá và tham gia các phiên đấu giá hấp dẫn</p>
+            <div className="header-stats">
+              <div className="stat-item">
+                <i className="fas fa-fire"></i>
+                <span>{auctions.length} phiên đang diễn ra</span>
+              </div>
+              <div className="stat-item">
+                <i className="fas fa-users"></i>
+                <span>50,000+ người tham gia</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Search Bar */}
-        <div className="search-section">
+        <div ref={searchRef} className="search-section animate-on-scroll">
           <form onSubmit={handleSearchSubmit} className="search-form">
             <div className="search-input-wrapper">
-              <i className="fas fa-search"></i>
+              <i className="fas fa-search search-icon"></i>
               <input
                 type="text"
-                placeholder="Tìm kiếm sản phẩm..."
+                placeholder="Tìm kiếm sản phẩm đấu giá..."
                 value={searchQuery}
                 onChange={handleSearchChange}
+                className="search-input"
               />
+              {searchQuery && (
+                <button
+                  type="button"
+                  className="clear-btn"
+                  onClick={() => setSearchQuery('')}
+                >
+                  <i className="fas fa-times"></i>
+                </button>
+              )}
             </div>
-            <button type="submit" className="btn-search">
-              Tìm kiếm
+            <button type="submit" className="btn-search btn-gradient">
+              <i className="fas fa-search"></i>
+              <span>Tìm kiếm</span>
             </button>
           </form>
         </div>
 
         {/* Filters and Sort */}
-        <div className="controls-section">
-          <div className="controls-left">
+        <div ref={controlsRef} className="controls-section animate-on-scroll">
+          <div className="controls-wrapper">
             <div className="filter-group">
               <label htmlFor="status-filter">
                 <i className="fas fa-filter"></i>
-                Trạng thái:
+                Trạng thái
               </label>
-              <select
-                id="status-filter"
-                value={selectedStatus}
-                onChange={handleStatusChange}
-              >
-                {statusOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="select-wrapper">
+                <select
+                  id="status-filter"
+                  value={selectedStatus}
+                  onChange={handleStatusChange}
+                  className="select-enhanced"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <i className="fas fa-chevron-down select-arrow"></i>
+              </div>
             </div>
-          </div>
 
-          <div className="controls-right">
             <div className="filter-group">
               <label htmlFor="sort-select">
                 <i className="fas fa-sort"></i>
-                Sắp xếp:
+                Sắp xếp
               </label>
-              <select
-                id="sort-select"
-                value={sortBy}
-                onChange={handleSortChange}
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              <div className="select-wrapper">
+                <select
+                  id="sort-select"
+                  value={sortBy}
+                  onChange={handleSortChange}
+                  className="select-enhanced"
+                >
+                  {sortOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <i className="fas fa-chevron-down select-arrow"></i>
+              </div>
             </div>
+
+            {(selectedStatus !== 'ALL' || searchQuery) && (
+              <button
+                className="btn-reset"
+                onClick={() => {
+                  setSelectedStatus('ALL');
+                  setSearchQuery('');
+                  setCurrentPage(1);
+                }}
+              >
+                <i className="fas fa-redo"></i>
+                <span>Đặt lại</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="alert alert-error">
-            <i className="fas fa-exclamation-circle"></i>
-            {error}
+          <div className="alert alert-error animate-shake">
+            <i className="fas fa-exclamation-triangle"></i>
+            <span>{error}</span>
           </div>
         )}
 
         {/* Loading State */}
         {loading ? (
           <div className="loading-section">
-            <div className="spinner"></div>
-            <p>Đang tải dữ liệu...</p>
+            <div className="loading-spinner">
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
+              <div className="spinner-ring"></div>
+            </div>
+            <p className="loading-text">Đang tải dữ liệu phiên đấu giá...</p>
           </div>
         ) : (
           <>
             {/* Auctions Grid */}
             {auctions.length === 0 ? (
-              <div className="empty-state">
-                <i className="fas fa-inbox"></i>
+              <div className="empty-state animate-fade-in">
+                <div className="empty-icon">
+                  <i className="fas fa-inbox"></i>
+                </div>
                 <h3>Không tìm thấy phiên đấu giá</h3>
                 <p>Hãy thử thay đổi bộ lọc hoặc tìm kiếm khác</p>
                 <button 
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-gradient"
                   onClick={() => {
                     setSelectedCategory('ALL');
                     setSelectedStatus('ALL');
@@ -299,55 +400,64 @@ const AuctionsPage = () => {
                   }}
                 >
                   <i className="fas fa-redo"></i>
-                  Đặt lại bộ lọc
+                  <span>Đặt lại bộ lọc</span>
                 </button>
               </div>
             ) : (
               <div className="auctions-grid">
-                {auctions.map((auction) => {
+                {auctions.map((auction, index) => {
                   const status = getStatusBadge(auction.status);
-                
                   const currentPrice = auction.currentPrice || auction.startingPrice;
+                  const isVisible = visibleCards.has(index.toString());
 
                   return (
                     <div
                       key={auction.id}
-                      className="auction-card"
+                      ref={el => cardRefs.current[index] = el}
+                      data-index={index}
+                      className={`auction-card ${isVisible ? 'visible' : ''}`}
                       onClick={() => handleViewDetails(auction.id)}
+                      style={{ animationDelay: `${(index % 12) * 0.05}s` }}
                     >
-                      <div className="card-image">
+                      <div className="card-image-wrapper">
                         <img
                           src={auction.bannerImageUrl || 'https://www.shutterstock.com/image-vector/img-vector-icon-design-on-260nw-2164648583.jpg'}
                           alt={auction.productName || 'Product'}
                           onError={(e) => {
                             e.target.src = 'https://www.shutterstock.com/image-vector/img-vector-icon-design-on-260nw-2164648583.jpg';
                           }}
+                          className="card-image"
                         />
+                        <div className="image-overlay"></div>
                         <div className={`status-badge ${status.class}`}>
                           <i className={`fas ${status.icon}`}></i>
-                          {status.label}
+                          <span>{status.label}</span>
                         </div>
                         {auction.bidCount > 0 && (
-                          <div className="bid-count">
+                          <div className="bid-count-badge">
                             <i className="fas fa-gavel"></i>
-                            {auction.bidCount} lượt đấu giá
+                            <span>{auction.bidCount}</span>
+                          </div>
+                        )}
+                        {auction.status === 'ACTIVE' && (
+                          <div className="hot-badge">
+                            <i className="fas fa-fire"></i>
+                            <span>HOT</span>
                           </div>
                         )}
                       </div>
 
                       <div className="card-content">
                         <h3 className="product-name">{auction.productName || 'Unnamed Product'}</h3>
-                        
-                      
 
                         <div className="price-section">
                           <div className="current-price">
-                            <label>Giá hiện tại:</label>
+                            <label>Giá hiện tại</label>
                             <span className="price">{formatCurrency(currentPrice)}</span>
                           </div>
                           {auction.buyNowPrice && (
                             <div className="buy-now-price">
-                              <label>Mua ngay:</label>
+                              <label>Mua ngay</label>
                               <span className="price">{formatCurrency(auction.buyNowPrice)}</span>
                             </div>
                           )}
@@ -355,13 +465,13 @@ const AuctionsPage = () => {
 
                         <div className="card-footer">
                           {auction.status === 'ACTIVE' && (
-                            <div className="time-remaining">
+                            <div className="time-remaining active">
                               <i className="fas fa-clock"></i>
                               <span>{getTimeRemaining(auction.endTime)}</span>
                             </div>
                           )}
                           {auction.status === 'PENDING' && (
-                            <div className="time-remaining">
+                            <div className="time-remaining pending">
                               <i className="fas fa-calendar"></i>
                               <span>Bắt đầu: {formatDate(auction.startTime)}</span>
                             </div>
@@ -375,10 +485,12 @@ const AuctionsPage = () => {
                         </div>
 
                         <button className="btn-view-details">
-                          <i className="fas fa-eye"></i>
-                          Xem chi tiết
+                          <span>Xem chi tiết</span>
+                          <i className="fas fa-arrow-right"></i>
                         </button>
                       </div>
+
+                      <div className="card-shine"></div>
                     </div>
                   );
                 })}

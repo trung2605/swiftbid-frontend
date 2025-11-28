@@ -1,6 +1,7 @@
 import React from 'react';
 import About from '../../components/About/About';
 import './AboutPage.scss';
+import TeamMemberImage from '../../assets/images/memberAvatar.png';
 
 /**
  * AboutPage Component
@@ -22,7 +23,7 @@ const AboutPage = () => {
           <div className="team-grid">
             <div className="team-member">
               <div className="member-image">
-                <img src="https://via.placeholder.com/200x200" alt="Team Member" />
+                <img src={TeamMemberImage} alt="Team Member" />
               </div>
               <h3 className="member-name">John Doe</h3>
               <p className="member-role">CEO & Founder</p>
@@ -30,7 +31,7 @@ const AboutPage = () => {
 
             <div className="team-member">
               <div className="member-image">
-                <img src="https://via.placeholder.com/200x200" alt="Team Member" />
+                <img src={TeamMemberImage} alt="Team Member" />
               </div>
               <h3 className="member-name">Jane Smith</h3>
               <p className="member-role">CTO</p>
@@ -38,7 +39,7 @@ const AboutPage = () => {
 
             <div className="team-member">
               <div className="member-image">
-                <img src="https://via.placeholder.com/200x200" alt="Team Member" />
+                <img src={TeamMemberImage} alt="Team Member" />
               </div>
               <h3 className="member-name">Mike Johnson</h3>
               <p className="member-role">Head of Operations</p>
@@ -46,7 +47,7 @@ const AboutPage = () => {
 
             <div className="team-member">
               <div className="member-image">
-                <img src="https://via.placeholder.com/200x200" alt="Team Member" />
+                <img src={TeamMemberImage} alt="Team Member" />
               </div>
               <h3 className="member-name">Sarah Williams</h3>
               <p className="member-role">Lead Designer</p>
