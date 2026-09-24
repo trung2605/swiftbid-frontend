@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Projects from '../../components/Projects/Projects';
+import homeService from '../../services/homeService';
 import './HomePage.scss';
 import backgroundImage from '../../assets/images/background-1.png';
 
@@ -13,6 +14,13 @@ const HomePage = () => {
   const [scrollY, setScrollY] = useState(0);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
   const [visibleSections, setVisibleSections] = useState(new Set());
+  // FR-HOME-01: real numbers from the backend; fall back to the marketing
+  // placeholders below if the request fails (e.g. offline demo).
+  const [homeStats, setHomeStats] = useState(null);
+
+  useEffect(() => {
+    homeService.getStats().then(setHomeStats).catch(() => setHomeStats(null));
+  }, []);
   
   // Refs for sections
   const statsRef = useRef(null);
@@ -94,7 +102,9 @@ const HomePage = () => {
         updateCounter();
       });
     }
-  }, [visibleSections]);
+    // Re-run once homeStats arrives too, in case the section was already visible
+    // before the async /api/home/stats call resolved.
+  }, [visibleSections, homeStats]);
 
   const testimonials = [
     {
@@ -269,7 +279,11 @@ const HomePage = () => {
               <div className="stat-icon">
                 <i className="fas fa-gavel"></i>
               </div>
-              <h3 className="stat-number" data-target="10000" data-display="10,000+">0</h3>
+              <h3
+                className="stat-number"
+                data-target={homeStats ? homeStats.completedAuctions : 10000}
+                data-display={homeStats ? `${homeStats.completedAuctions.toLocaleString('vi-VN')}+` : '10,000+'}
+              >0</h3>
               <p className="stat-label">Phiên Đấu Giá Hoàn Thành</p>
               <div className="stat-bar"></div>
             </div>
@@ -277,7 +291,11 @@ const HomePage = () => {
               <div className="stat-icon">
                 <i className="fas fa-users"></i>
               </div>
-              <h3 className="stat-number" data-target="50000" data-display="50,000+">0</h3>
+              <h3
+                className="stat-number"
+                data-target={homeStats ? homeStats.totalUsers : 50000}
+                data-display={homeStats ? `${homeStats.totalUsers.toLocaleString('vi-VN')}+` : '50,000+'}
+              >0</h3>
               <p className="stat-label">Người Dùng Tin Tưởng</p>
               <div className="stat-bar"></div>
             </div>
@@ -285,7 +303,16 @@ const HomePage = () => {
               <div className="stat-icon">
                 <i className="fas fa-sack-dollar"></i>
               </div>
-              <h3 className="stat-number" data-display="150 Tỷ VNĐ+">0</h3>
+              <h3
+                className="stat-number"
+                data-display={
+                  homeStats
+                    ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                        homeStats.totalTransactionValue || 0
+                      )
+                    : '150 Tỷ VNĐ+'
+                }
+              >0</h3>
               <p className="stat-label">Tổng Giá Trị Giao Dịch</p>
               <div className="stat-bar"></div>
             </div>

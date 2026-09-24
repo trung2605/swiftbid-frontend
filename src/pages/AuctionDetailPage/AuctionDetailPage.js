@@ -29,6 +29,7 @@ const AuctionDetailPage = () => {
   const [placingBid, setPlacingBid] = useState(false);
   const [bidError, setBidError] = useState('');
   const [bidSuccess, setBidSuccess] = useState('');
+  const [now, setNow] = useState(() => new Date());
 
   const fetchAuctionDetail = useCallback(async () => {
     setLoading(true);
@@ -63,6 +64,12 @@ const AuctionDetailPage = () => {
     fetchAuctionDetail();
     fetchBidHistory();
   }, [fetchAuctionDetail, fetchBidHistory]);
+
+  // Ticks the countdown every second so "thời gian còn lại" updates live instead of only on reload.
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // FR-BID-05: live-update the price/bid-count without requiring a page reload.
   useEffect(() => {
@@ -112,19 +119,20 @@ const AuctionDetailPage = () => {
   };
 
   const calculateTimeRemaining = (endTime) => {
-    const now = new Date();
     const end = new Date(endTime);
-    const diff = end - now;
+    const diff = end - now; // `now` ticks every second (see the interval effect above)
 
     if (diff <= 0) return 'Đã kết thúc';
 
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
     if (days > 0) return `${days} ngày ${hours} giờ`;
     if (hours > 0) return `${hours} giờ ${minutes} phút`;
-    return `${minutes} phút`;
+    if (minutes > 0) return `${minutes} phút ${seconds} giây`;
+    return `${seconds} giây`;
   };
 
   const minNextBid = auction ? Number(auction.currentHighestBidAmount || 0) + 1000 : 0;

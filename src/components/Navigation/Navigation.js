@@ -166,19 +166,21 @@ const Navigation = () => {
                     <i className="fas fa-user"></i>
                     <span>Profile</span>
                   </Link>
-                  <Link 
-                    to="/my-auctions" 
-                    className="dropdown-item"
-                    onClick={() => {
-                      setIsDropdownOpen(false);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <i className="fas fa-gavel"></i>
-                    <span>My Auctions</span>
-                  </Link>
-                  <Link 
-                    to="/my-bids" 
+                  {(roles.includes('SELLER') || roles.includes('ADMIN')) && (
+                    <Link
+                      to="/my-auctions"
+                      className="dropdown-item"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <i className="fas fa-gavel"></i>
+                      <span>My Auctions</span>
+                    </Link>
+                  )}
+                  <Link
+                    to="/my-bids"
                     className="dropdown-item"
                     onClick={() => {
                       setIsDropdownOpen(false);
@@ -187,17 +189,6 @@ const Navigation = () => {
                   >
                     <i className="fas fa-history"></i>
                     <span>My Bids</span>
-                  </Link>
-                  <Link 
-                    to="/settings" 
-                    className="dropdown-item"
-                    onClick={() => {
-                      setIsDropdownOpen(false);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <i className="fas fa-cog"></i>
-                    <span>Settings</span>
                   </Link>
                   <div className="dropdown-divider"></div>
                   <button 

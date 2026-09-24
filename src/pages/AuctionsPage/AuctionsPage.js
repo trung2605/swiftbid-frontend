@@ -12,6 +12,7 @@ const AuctionsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [auctions, setAuctions] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [visibleCards, setVisibleCards] = useState(new Set());
@@ -105,6 +106,11 @@ const AuctionsPage = () => {
       const response = await auctionService.getAllAuctions();
       let filteredAuctions = response || [];
 
+      const categories = Array.from(
+        new Set(filteredAuctions.map((a) => a.product?.category).filter(Boolean))
+      ).sort();
+      setAvailableCategories(categories);
+
       // Filter by category
       if (selectedCategory !== 'ALL') {
         filteredAuctions = filteredAuctions.filter(
@@ -169,6 +175,11 @@ const AuctionsPage = () => {
 
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
     setCurrentPage(1);
   };
 
@@ -302,6 +313,30 @@ const AuctionsPage = () => {
         {/* Filters and Sort */}
         <div ref={controlsRef} className="controls-section animate-on-scroll">
           <div className="controls-wrapper">
+            {availableCategories.length > 0 && (
+              <div className="filter-group">
+                <label htmlFor="category-filter">
+                  <i className="fas fa-tags"></i>
+                  Danh mục
+                </label>
+                <div className="select-wrapper">
+                  <select
+                    id="category-filter"
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    className="select-enhanced"
+                  >
+                    <option value="ALL">Tất cả danh mục</option>
+                    {availableCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  <i className="fas fa-chevron-down select-arrow"></i>
+                </div>
+              </div>
+            )}
             <div className="filter-group">
               <label htmlFor="status-filter">
                 <i className="fas fa-filter"></i>
@@ -346,10 +381,11 @@ const AuctionsPage = () => {
               </div>
             </div>
 
-            {(selectedStatus !== 'ALL' || searchQuery) && (
+            {(selectedStatus !== 'ALL' || selectedCategory !== 'ALL' || searchQuery) && (
               <button
                 className="btn-reset"
                 onClick={() => {
+                  setSelectedCategory('ALL');
                   setSelectedStatus('ALL');
                   setSearchQuery('');
                   setCurrentPage(1);

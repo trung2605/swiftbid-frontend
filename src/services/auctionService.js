@@ -72,14 +72,17 @@ const auctionService = {
   },
 
   /**
-   * Update an existing auction
+   * Update an existing auction's schedule (only allowed while it's still PENDING).
+   * Backend takes startTime/endTime as request params, not a JSON body.
    * @param {number} id - Auction ID
-   * @param {Object} auctionData - Updated auction data
+   * @param {{startTime: string, endTime: string}} auctionData - ISO date-time strings
    * @returns {Promise} - Promise with updated auction data
    */
-  updateAuction: async (id, auctionData) => {
+  updateAuction: async (id, { startTime, endTime }) => {
     try {
-      const response = await apiClient.put(`${API_BASE_URL}/${id}`, auctionData);
+      const response = await apiClient.put(`${API_BASE_URL}/${id}`, null, {
+        params: { startTime, endTime },
+      });
       return response.data;
     } catch (error) {
       console.error(`Error updating auction ${id}:`, error);
@@ -88,9 +91,23 @@ const auctionService = {
   },
 
   /**
-   * Delete an auction
+   * Fetch auctions created by the currently authenticated seller.
+   * @returns {Promise} - Promise with the caller's own auctions
+   */
+  getMyAuctions: async () => {
+    try {
+      const response = await apiClient.get(`${API_BASE_URL}/my-auctions`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching my auctions:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Cancel (soft-delete) an auction.
    * @param {number} id - Auction ID
-   * @returns {Promise} - Promise resolving when deletion is complete
+   * @returns {Promise} - Promise resolving when cancellation is complete
    */
   deleteAuction: async (id) => {
     try {
