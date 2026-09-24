@@ -1,4 +1,4 @@
-import axios from '../config/axiosConfig';
+import apiClient from '../config/api';
 
 /**
  * Bid Service
@@ -9,42 +9,15 @@ const API_BASE_URL = '/api/bids';
 
 const bidService = {
   /**
-   * Fetch all bids
-   * @returns {Promise} - Promise with bids data
-   */
-  getAllBids: async () => {
-    try {
-      const response = await axios.get(API_BASE_URL);
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching bids:', error);
-      throw error;
-    }
-  },
-
-  /**
-   * Fetch a single bid by ID
-   * @param {number} id - Bid ID
-   * @returns {Promise} - Promise with bid data
-   */
-  getBidById: async (id) => {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/${id}`);
-      return response.data;
-    } catch (error) {
-      console.error(`Error fetching bid ${id}:`, error);
-      throw error;
-    }
-  },
-
-  /**
-   * Place a new bid
-   * @param {Object} bidData - Bid data containing auction ID, user ID, and bid amount
+   * Place a new bid on an auction.
+   * userId is intentionally NOT sent — the backend always takes it from the JWT (FR-BID-01).
+   * @param {number} auctionId - Auction ID
+   * @param {number} bidAmount - Bid amount
    * @returns {Promise} - Promise with created bid data
    */
-  placeBid: async (bidData) => {
+  placeBid: async (auctionId, bidAmount) => {
     try {
-      const response = await axios.post(API_BASE_URL, bidData);
+      const response = await apiClient.post(API_BASE_URL, { auctionId, bidAmount });
       return response.data;
     } catch (error) {
       console.error('Error placing bid:', error);
@@ -53,13 +26,13 @@ const bidService = {
   },
 
   /**
-   * Get bids for a specific auction
+   * Get bid history for a specific auction (newest first).
    * @param {number} auctionId - Auction ID
    * @returns {Promise} - Promise with bids data for the auction
    */
   getBidsByAuction: async (auctionId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/auction/${auctionId}`);
+      const response = await apiClient.get(`${API_BASE_URL}/auction/${auctionId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching bids for auction ${auctionId}:`, error);
@@ -68,34 +41,19 @@ const bidService = {
   },
 
   /**
-   * Get bids placed by a specific user
+   * Get bids placed by a specific user (newest first).
    * @param {number} userId - User ID
    * @returns {Promise} - Promise with bids data for the user
    */
   getBidsByUser: async (userId) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/user/${userId}`);
+      const response = await apiClient.get(`${API_BASE_URL}/user/${userId}`);
       return response.data;
     } catch (error) {
       console.error(`Error fetching bids for user ${userId}:`, error);
       throw error;
     }
   },
-
-  /**
-   * Delete a bid
-   * @param {number} id - Bid ID
-   * @returns {Promise} - Promise resolving when deletion is complete
-   */
-  deleteBid: async (id) => {
-    try {
-      await axios.delete(`${API_BASE_URL}/${id}`);
-      return { success: true, message: 'Bid deleted successfully' };
-    } catch (error) {
-      console.error(`Error deleting bid ${id}:`, error);
-      throw error;
-    }
-  }
 };
 
 export default bidService;

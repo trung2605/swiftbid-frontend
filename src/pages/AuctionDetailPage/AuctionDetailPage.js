@@ -1,27 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import auctionService from '../../services/auctionService';
+import bidService from '../../services/bidService';
+import { subscribeToAuction } from '../../services/websocketService';
+import { useAuth } from '../../contexts/AuthContext';
 import './AuctionDetailPage.scss';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 /**
  * Auction Detail Page Component
- * Display detailed information about a specific auction
+ * Display detailed information about a specific auction, allow placing bids (FR-BID-01),
+ * show bid history (FR-BID-03) and reflect new bids from other users in real time (FR-BID-05).
  */
 const AuctionDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+  const { isAuthenticated } = useAuth();
+
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchAuctionDetail();
-  }, [id]);
+  const [bidHistory, setBidHistory] = useState([]);
+  const [bidHistoryLoading, setBidHistoryLoading] = useState(true);
 
-  const fetchAuctionDetail = async () => {
+  const [bidAmount, setBidAmount] = useState('');
+  const [placingBid, setPlacingBid] = useState(false);
+  const [bidError, setBidError] = useState('');
+  const [bidSuccess, setBidSuccess] = useState('');
+
+  const fetchAuctionDetail = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -29,7 +38,6 @@ const AuctionDetailPage = () => {
       const response = await auctionService.getAuctionDetails(id);
       // Backend may return: { status, data, timestamp } or direct data
       const auctionData = response.data || response;
-      console.log('Auction detail data:', auctionData);
       setAuction(auctionData);
     } catch (err) {
       console.error('Failed to fetch auction detail:', err);
@@ -37,7 +45,43 @@ const AuctionDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  const fetchBidHistory = useCallback(async () => {
+    setBidHistoryLoading(true);
+    try {
+      const bids = await bidService.getBidsByAuction(id);
+      setBidHistory(Array.isArray(bids) ? bids : []);
+    } catch (err) {
+      console.error('Failed to fetch bid history:', err);
+    } finally {
+      setBidHistoryLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchAuctionDetail();
+    fetchBidHistory();
+  }, [fetchAuctionDetail, fetchBidHistory]);
+
+  // FR-BID-05: live-update the price/bid-count without requiring a page reload.
+  useEffect(() => {
+    const unsubscribe = subscribeToAuction(id, (update) => {
+      setAuction((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentHighestBidAmount: update.currentHighestBidAmount,
+              currentHighestBidder: update.currentHighestBidderUsername
+                ? { username: update.currentHighestBidderUsername }
+                : prev.currentHighestBidder,
+            }
+          : prev
+      );
+      fetchBidHistory();
+    });
+    return unsubscribe;
+  }, [id, fetchBidHistory]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -81,6 +125,42 @@ const AuctionDetailPage = () => {
     if (days > 0) return `${days} ngày ${hours} giờ`;
     if (hours > 0) return `${hours} giờ ${minutes} phút`;
     return `${minutes} phút`;
+  };
+
+  const minNextBid = auction ? Number(auction.currentHighestBidAmount || 0) + 1000 : 0;
+
+  const handlePlaceBid = async (e) => {
+    e.preventDefault();
+    setBidError('');
+    setBidSuccess('');
+
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    const amount = Number(bidAmount);
+    if (!amount || amount <= Number(auction.currentHighestBidAmount || 0)) {
+      setBidError(`Giá đặt phải cao hơn giá hiện tại (${formatCurrency(auction.currentHighestBidAmount)})`);
+      return;
+    }
+
+    setPlacingBid(true);
+    try {
+      await bidService.placeBid(Number(id), amount);
+      setBidSuccess('Đặt giá thành công!');
+      setBidAmount('');
+      await fetchAuctionDetail();
+      await fetchBidHistory();
+      setTimeout(() => setBidSuccess(''), 3000);
+    } catch (err) {
+      setBidError(
+        err.response?.data?.message ||
+        'Không thể đặt giá. Vui lòng thử lại.'
+      );
+    } finally {
+      setPlacingBid(false);
+    }
   };
 
   if (loading) {
@@ -163,6 +243,7 @@ const AuctionDetailPage = () => {
               </div>
               <div className="price-info">
                 <span>Giá khởi điểm: {formatCurrency(auction.product?.initialPrice || 0)}</span>
+                <span> · {bidHistory.length} lượt đặt giá</span>
               </div>
             </div>
 
@@ -195,13 +276,44 @@ const AuctionDetailPage = () => {
               </div>
             </div>
 
-            {/* Bid Button */}
+            {/* Bid Form */}
             {auction.status === 'ACTIVE' && (
               <div className="bid-section">
-                <button className="btn btn-primary btn-bid">
-                  <i className="fas fa-gavel"></i>
-                  Đặt giá
-                </button>
+                {bidError && (
+                  <div className="alert alert-error">
+                    <i className="fas fa-exclamation-circle"></i>
+                    {bidError}
+                  </div>
+                )}
+                {bidSuccess && (
+                  <div className="alert alert-success">
+                    <i className="fas fa-check-circle"></i>
+                    {bidSuccess}
+                  </div>
+                )}
+                <form onSubmit={handlePlaceBid} className="bid-form">
+                  <input
+                    type="number"
+                    min={minNextBid}
+                    step="1000"
+                    placeholder={`Tối thiểu ${formatCurrency(minNextBid)}`}
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    disabled={placingBid}
+                    required
+                  />
+                  <button type="submit" className="btn btn-primary btn-bid" disabled={placingBid}>
+                    {placingBid ? (
+                      <>
+                        <i className="fas fa-spinner fa-spin"></i> Đang đặt giá...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-gavel"></i> Đặt giá
+                      </>
+                    )}
+                  </button>
+                </form>
               </div>
             )}
 
@@ -227,7 +339,7 @@ const AuctionDetailPage = () => {
 
           <ReactMarkdown remarkPlugins={[remarkGfm]} style={{ whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
             {auction.product?.description || 'Không có mô tả'}
-          </ReactMarkdown>      
+          </ReactMarkdown>
           {/* Product Details */}
           {auction.product && (
             <div className="product-details">
@@ -254,7 +366,7 @@ const AuctionDetailPage = () => {
               <i className="fas fa-gavel"></i>
               Thông tin chi tiết đấu giá
             </h2>
-            
+
             {auction.auctionDetail.auctionDescription && (
               <div className="detail-block">
                 <h3>
@@ -325,16 +437,34 @@ const AuctionDetailPage = () => {
           </div>
         </div>
 
-        {/* Bid History Section (placeholder) */}
+        {/* Bid History Section */}
         <div className="bid-history-section">
           <h2>
             <i className="fas fa-history"></i>
             Lịch sử đấu giá
           </h2>
-          <div className="empty-history">
-            <i className="fas fa-inbox"></i>
-            <p>Chưa có lượt đấu giá nào</p>
-          </div>
+          {bidHistoryLoading ? (
+            <div className="loading-history">
+              <i className="fas fa-spinner fa-spin"></i>
+            </div>
+          ) : bidHistory.length === 0 ? (
+            <div className="empty-history">
+              <i className="fas fa-inbox"></i>
+              <p>Chưa có lượt đấu giá nào</p>
+            </div>
+          ) : (
+            <ul className="bid-history-list">
+              {bidHistory.map((bid) => (
+                <li key={bid.id} className="bid-history-item">
+                  <span className="bidder">
+                    <i className="fas fa-user"></i> {bid.user?.username || 'Người dùng'}
+                  </span>
+                  <span className="amount">{formatCurrency(bid.bidAmount)}</span>
+                  <span className="time">{formatDateTime(bid.timestamp)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </div>
