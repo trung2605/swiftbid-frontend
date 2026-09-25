@@ -63,6 +63,13 @@ export const getRoles = () => {
   return apiClient.get('/api/account/roles');
 }
 
+/**
+ * Fetch account stats (auctions created / participated in / won) for ProfilePage.
+ */
+export const getAccountStats = () => {
+  return apiClient.get('/api/account/stats');
+}
+
 export const isAuthenticated = () => {
   const token = localStorage.getItem('token');
   return !!token;

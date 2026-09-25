@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { getCurrentUser, becomeSeller, getRoles } from '../../services/authService';
+import { getCurrentUser, becomeSeller, getRoles, getAccountStats } from '../../services/authService';
 import apiClient from '../../config/api';
 import './ProfilePage.scss';
 
@@ -21,6 +21,7 @@ const ProfilePage = () => {
   const [upgrading, setUpgrading] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [roles, setRoles] = useState([]);
+  const [stats, setStats] = useState({ auctionsCreated: 0, auctionsParticipated: 0, auctionsWon: 0 });
 
   // Form data for editing
   const [formData, setFormData] = useState({
@@ -35,6 +36,7 @@ const ProfilePage = () => {
   useEffect(() => {
     fetchUserDetails();
     fetchRoles();
+    fetchStats();
   }, []);
 
   const fetchUserDetails = async () => {
@@ -67,6 +69,15 @@ const ProfilePage = () => {
       setRoles(response.data);
     } catch (err) {
       console.error('Failed to fetch roles:', err);
+    }
+  };
+
+  const fetchStats = async () => {
+    try {
+      const response = await getAccountStats();
+      setStats(response.data);
+    } catch (err) {
+      console.error('Failed to fetch account stats:', err);
     }
   };
 
@@ -543,21 +554,21 @@ const ProfilePage = () => {
               <div className="stat-card">
                 <i className="fas fa-gavel"></i>
                 <div className="stat-info">
-                  <span className="stat-value">0</span>
+                  <span className="stat-value">{stats.auctionsCreated}</span>
                   <span className="stat-label">Đấu giá đã tạo</span>
                 </div>
               </div>
               <div className="stat-card">
                 <i className="fas fa-hand-holding-usd"></i>
                 <div className="stat-info">
-                  <span className="stat-value">0</span>
+                  <span className="stat-value">{stats.auctionsParticipated}</span>
                   <span className="stat-label">Đấu giá đã tham gia</span>
                 </div>
               </div>
               <div className="stat-card">
                 <i className="fas fa-trophy"></i>
                 <div className="stat-info">
-                  <span className="stat-value">0</span>
+                  <span className="stat-value">{stats.auctionsWon}</span>
                   <span className="stat-label">Đấu giá thắng</span>
                 </div>
               </div>

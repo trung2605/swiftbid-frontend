@@ -21,6 +21,7 @@ const MyProductsPage = () => {
   const [roles, setRoles] = useState([]);
   const [products, setProducts] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null); // null = create mode, object = edit mode
   const [isRoleChecked, setIsRoleChecked] = useState(false);
 
   // Product Form Data
@@ -170,25 +171,30 @@ const MyProductsPage = () => {
     setSuccess("");
 
     try {
-      // Create FormData to send multipart/form-data
-      const formData = new FormData();
-      formData.append("name", productData.name.trim());
-      formData.append("description", productData.description.trim());
-      formData.append("initialPrice", productData.initialPrice);
-
-      // Append image file if selected
-      if (imageFile) {
-        formData.append("image", imageFile);
+      if (editingProduct) {
+        // Edit mode: PUT expects a JSON body, no image change (create a new product to swap images).
+        await productService.updateProduct(editingProduct.id, {
+          name: productData.name.trim(),
+          description: productData.description.trim(),
+          category: editingProduct.category || null,
+          initialPrice: productData.initialPrice,
+        });
+        setSuccess("Cập nhật sản phẩm thành công!");
+      } else {
+        // Create mode: multipart so an image can be attached.
+        const formData = new FormData();
+        formData.append("name", productData.name.trim());
+        formData.append("description", productData.description.trim());
+        formData.append("initialPrice", productData.initialPrice);
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+        // Backend automatically assigns the seller from the JWT token.
+        await apiClient.post("/api/products", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        setSuccess("Tạo sản phẩm thành công!");
       }
-
-      // Send request to backend - Backend will automatically assign seller from JWT token
-      const response = await apiClient.post("/api/products", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setSuccess("Tạo sản phẩm thành công!");
 
       // Reset form
       setProductData({
@@ -206,18 +212,42 @@ const MyProductsPage = () => {
       // Close modal after 1.5 seconds
       setTimeout(() => {
         setShowCreateModal(false);
+        setEditingProduct(null);
         setSuccess("");
       }, 1500);
     } catch (err) {
-      console.error("Failed to create product:", err);
+      console.error("Failed to save product:", err);
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
-          "Không thể tạo sản phẩm. Vui lòng thử lại."
+          "Không thể lưu sản phẩm. Vui lòng thử lại."
       );
     } finally {
       setCreating(false);
     }
+  };
+
+  const openEditModal = (product) => {
+    setEditingProduct(product);
+    setProductData({
+      name: product.name || "",
+      description: product.description || "",
+      initialPrice: product.initialPrice || "",
+      imageUrl: product.imageUrl || "",
+    });
+    setImageFile(null);
+    setImagePreview("");
+    setError("");
+    setSuccess("");
+    setShowCreateModal(true);
+  };
+
+  const closeModal = () => {
+    setShowCreateModal(false);
+    setEditingProduct(null);
+    setProductData({ name: "", description: "", initialPrice: "", imageUrl: "" });
+    setImageFile(null);
+    setImagePreview("");
   };
 
   const handleDeleteProduct = async (productId) => {
@@ -389,8 +419,16 @@ const MyProductsPage = () => {
                           Tạo đấu giá
                         </button>
                         <button
+                          className="btn btn-secondary"
+                          onClick={() => openEditModal(product)}
+                          title="Sửa"
+                        >
+                          <i className="fas fa-edit"></i>
+                        </button>
+                        <button
                           className="btn btn-danger"
                           onClick={() => handleDeleteProduct(product.id)}
+                          title="Xóa"
                         >
                           <i className="fas fa-trash"></i>
                         </button>
@@ -461,21 +499,21 @@ const MyProductsPage = () => {
         )}
       </div>
 
-      {/* Create Product Modal */}
+      {/* Create/Edit Product Modal */}
       {showCreateModal && (
         <div
           className="modal-overlay"
-          onClick={() => setShowCreateModal(false)}
+          onClick={closeModal}
         >
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>
-                <i className="fas fa-plus-circle"></i>
-                Tạo Sản Phẩm Mới
+                <i className={`fas ${editingProduct ? "fa-edit" : "fa-plus-circle"}`}></i>
+                {editingProduct ? "Sửa Sản Phẩm" : "Tạo Sản Phẩm Mới"}
               </h2>
               <button
                 className="btn-close"
-                onClick={() => setShowCreateModal(false)}
+                onClick={closeModal}
               >
                 <i className="fas fa-times"></i>
               </button>
@@ -532,39 +570,57 @@ const MyProductsPage = () => {
                 />
               </div>
 
-              <div className="form-group">
-                <label>
-                  <i className="fas fa-image"></i>
-                  Hình ảnh sản phẩm
-                  <span className="hint">(Dưới 5MB)</span>
-                </label>
-
-                <div className="image-upload-area">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    id="modal-image-upload"
-                    style={{ display: "none" }}
-                  />
-                  <label htmlFor="modal-image-upload" className="upload-button">
-                    <i className="fas fa-cloud-upload-alt"></i>
-                    {imagePreview ? "Thay đổi ảnh" : "Tải ảnh lên"}
+              {editingProduct ? (
+                <div className="form-group">
+                  <label>
+                    <i className="fas fa-image"></i>
+                    Hình ảnh sản phẩm
                   </label>
-                </div>
-
-                {imagePreview && (
                   <div className="image-preview-single">
-                    <img src={imagePreview} alt="Preview" />
+                    <img
+                      src={editingProduct.imageUrl || "https://via.placeholder.com/200x150?text=No+Image"}
+                      alt={editingProduct.name}
+                    />
                   </div>
-                )}
-              </div>
+                  <small className="form-hint">
+                    Không thể đổi ảnh khi sửa — hãy tạo sản phẩm mới nếu cần ảnh khác.
+                  </small>
+                </div>
+              ) : (
+                <div className="form-group">
+                  <label>
+                    <i className="fas fa-image"></i>
+                    Hình ảnh sản phẩm
+                    <span className="hint">(Dưới 5MB)</span>
+                  </label>
+
+                  <div className="image-upload-area">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      id="modal-image-upload"
+                      style={{ display: "none" }}
+                    />
+                    <label htmlFor="modal-image-upload" className="upload-button">
+                      <i className="fas fa-cloud-upload-alt"></i>
+                      {imagePreview ? "Thay đổi ảnh" : "Tải ảnh lên"}
+                    </label>
+                  </div>
+
+                  {imagePreview && (
+                    <div className="image-preview-single">
+                      <img src={imagePreview} alt="Preview" />
+                    </div>
+                  )}
+                </div>
+              )}
 
               <div className="modal-footer">
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowCreateModal(false)}
+                  onClick={closeModal}
                   disabled={creating}
                 >
                   Hủy
@@ -577,12 +633,12 @@ const MyProductsPage = () => {
                   {creating ? (
                     <>
                       <i className="fas fa-spinner fa-spin"></i>
-                      Đang tạo...
+                      {editingProduct ? "Đang lưu..." : "Đang tạo..."}
                     </>
                   ) : (
                     <>
                       <i className="fas fa-check"></i>
-                      Tạo sản phẩm
+                      {editingProduct ? "Lưu thay đổi" : "Tạo sản phẩm"}
                     </>
                   )}
                 </button>

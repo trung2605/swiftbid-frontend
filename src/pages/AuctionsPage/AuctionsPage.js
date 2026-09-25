@@ -12,6 +12,7 @@ const AuctionsPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
   const [auctions, setAuctions] = useState([]);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [visibleCards, setVisibleCards] = useState(new Set());
@@ -58,7 +59,20 @@ const AuctionsPage = () => {
     if (searchQuery) params.set('search', searchQuery);
     if (currentPage !== 1) params.set('page', currentPage);
     setSearchParams(params);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCategory, selectedStatus, sortBy, currentPage, searchQuery]);
+
+  // Category options for the filter dropdown are drawn from the full auction list once on
+  // mount (a lightweight, one-time call) — the paginated /search results only ever contain the
+  // categories present on the current page, which wouldn't make a stable filter list.
+  useEffect(() => {
+    auctionService.getAllAuctions()
+      .then((all) => {
+        const categories = Array.from(new Set((all || []).map((a) => a.product?.category).filter(Boolean))).sort();
+        setAvailableCategories(categories);
+      })
+      .catch(() => setAvailableCategories([]));
+  }, []);
 
   // Intersection Observer for card animations
   useEffect(() => {
@@ -102,45 +116,25 @@ const AuctionsPage = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await auctionService.getAllAuctions();
-      let filteredAuctions = response || [];
+      const response = await auctionService.searchAuctions({
+        status: selectedStatus !== 'ALL' ? selectedStatus : undefined,
+        category: selectedCategory !== 'ALL' ? selectedCategory : undefined,
+        q: searchQuery.trim() || undefined,
+        sort: sortBy,
+        page: currentPage - 1, // backend pages are 0-indexed; the UI counts from 1
+        size: itemsPerPage,
+      });
 
-      // Filter by category
-      if (selectedCategory !== 'ALL') {
-        filteredAuctions = filteredAuctions.filter(
-          auction => auction.product?.category === selectedCategory
-        );
+      let content = response.content || [];
+      // The backend doesn't support MOST_BIDS as a true cross-page sort (it would require a
+      // GROUP BY that doesn't compose with the other filters) and falls back to newest-first;
+      // re-sort what's already on this page client-side so the option isn't a no-op.
+      if (sortBy === 'MOST_BIDS') {
+        content = [...content].sort((a, b) => (b.bidCount || 0) - (a.bidCount || 0));
       }
 
-      // Filter by status
-      if (selectedStatus !== 'ALL') {
-        filteredAuctions = filteredAuctions.filter(
-          auction => auction.status === selectedStatus
-        );
-      }
-
-      // Search filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        filteredAuctions = filteredAuctions.filter(
-          auction =>
-            auction.product?.name?.toLowerCase().includes(query) ||
-            auction.product?.description?.toLowerCase().includes(query)
-        );
-      }
-
-      // Sort auctions
-      filteredAuctions = sortAuctions(filteredAuctions, sortBy);
-
-      // Pagination
-      const totalItems = filteredAuctions.length;
-      setTotalPages(Math.ceil(totalItems / itemsPerPage));
-      
-      const startIndex = (currentPage - 1) * itemsPerPage;
-      const endIndex = startIndex + itemsPerPage;
-      const paginatedAuctions = filteredAuctions.slice(startIndex, endIndex);
-
-      setAuctions(paginatedAuctions);
+      setAuctions(content);
+      setTotalPages(response.totalPages || 1);
     } catch (err) {
       console.error('Failed to fetch auctions:', err);
       setError('Không thể tải danh sách đấu giá. Vui lòng thử lại.');
@@ -149,26 +143,13 @@ const AuctionsPage = () => {
     }
   };
 
-  const sortAuctions = (auctions, sortType) => {
-    const sorted = [...auctions];
-    switch (sortType) {
-      case 'NEWEST':
-        return sorted.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
-      case 'ENDING_SOON':
-        return sorted.sort((a, b) => new Date(a.endTime) - new Date(b.endTime));
-      case 'PRICE_LOW':
-        return sorted.sort((a, b) => (a.currentPrice || a.startingPrice) - (b.currentPrice || b.startingPrice));
-      case 'PRICE_HIGH':
-        return sorted.sort((a, b) => (b.currentPrice || b.startingPrice) - (a.currentPrice || a.startingPrice));
-      case 'MOST_BIDS':
-        return sorted.sort((a, b) => (b.bidCount || 0) - (a.bidCount || 0));
-      default:
-        return sorted;
-    }
-  };
-
   const handleStatusChange = (e) => {
     setSelectedStatus(e.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (e) => {
+    setSelectedCategory(e.target.value);
     setCurrentPage(1);
   };
 
@@ -302,6 +283,30 @@ const AuctionsPage = () => {
         {/* Filters and Sort */}
         <div ref={controlsRef} className="controls-section animate-on-scroll">
           <div className="controls-wrapper">
+            {availableCategories.length > 0 && (
+              <div className="filter-group">
+                <label htmlFor="category-filter">
+                  <i className="fas fa-tags"></i>
+                  Danh mục
+                </label>
+                <div className="select-wrapper">
+                  <select
+                    id="category-filter"
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    className="select-enhanced"
+                  >
+                    <option value="ALL">Tất cả danh mục</option>
+                    {availableCategories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  <i className="fas fa-chevron-down select-arrow"></i>
+                </div>
+              </div>
+            )}
             <div className="filter-group">
               <label htmlFor="status-filter">
                 <i className="fas fa-filter"></i>
@@ -346,10 +351,11 @@ const AuctionsPage = () => {
               </div>
             </div>
 
-            {(selectedStatus !== 'ALL' || searchQuery) && (
+            {(selectedStatus !== 'ALL' || selectedCategory !== 'ALL' || searchQuery) && (
               <button
                 className="btn-reset"
                 onClick={() => {
+                  setSelectedCategory('ALL');
                   setSelectedStatus('ALL');
                   setSearchQuery('');
                   setCurrentPage(1);

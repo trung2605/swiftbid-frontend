@@ -1,0 +1,194 @@
+@import '../../styles/variables';
+@import '../../styles/mixins';
+
+.admin-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, $background-light 0%, rgba($primary-50, 0.3) 100%);
+  padding: $spacing-2xl 0;
+
+  .admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 $spacing-lg;
+  }
+
+  .page-header {
+    @include flex-row;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: $spacing-xl;
+    flex-wrap: wrap;
+    gap: $spacing-md;
+
+    h1 {
+      font-size: 2rem;
+      font-weight: $font-weight-bold;
+      background: $gradient-blue-ocean;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      @include flex-center;
+      gap: $spacing-md;
+    }
+
+    .user-count {
+      color: $text-secondary;
+      font-weight: $font-weight-medium;
+      background: $white;
+      padding: $spacing-sm $spacing-md;
+      border-radius: $radius-pill;
+      box-shadow: $shadow-sm;
+    }
+  }
+
+  .access-denied {
+    @include flex-center;
+    flex-direction: column;
+    gap: $spacing-lg;
+    padding: $spacing-4xl;
+    background: $white;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-lg;
+    text-align: center;
+
+    i {
+      font-size: 3.5rem;
+      color: $error-500;
+    }
+  }
+
+  .alert {
+    padding: $spacing-md $spacing-lg;
+    border-radius: $radius-lg;
+    margin-bottom: $spacing-lg;
+    @include flex-row;
+    align-items: center;
+    gap: $spacing-md;
+
+    &.alert-error { background: $error-50; color: $error-700; }
+    &.alert-success { background: $success-50; color: $success-700; }
+  }
+
+  .loading-section {
+    @include flex-center;
+    flex-direction: column;
+    padding: $spacing-4xl;
+    gap: $spacing-md;
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid $primary-100;
+      border-top-color: $primary-600;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+  }
+
+  .users-table {
+    background: $white;
+    border-radius: $radius-xl;
+    box-shadow: $shadow-md;
+    overflow: hidden;
+
+    .table-header,
+    .table-row {
+      display: grid;
+      grid-template-columns: 1.2fr 1.6fr 1.2fr 1fr 0.6fr;
+      align-items: center;
+      padding: $spacing-md $spacing-lg;
+      gap: $spacing-md;
+    }
+
+    .table-header {
+      background: $bg-secondary;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-semibold;
+      text-transform: uppercase;
+      color: $text-tertiary;
+      letter-spacing: 0.03em;
+    }
+
+    .table-row {
+      border-top: 1px solid $border-light;
+      font-size: $font-size-sm;
+
+      &:hover {
+        background: $bg-secondary;
+      }
+
+      .username {
+        font-weight: $font-weight-semibold;
+        color: $text-primary;
+      }
+
+      .email {
+        color: $text-secondary;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .roles {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+
+        .role-badge {
+          padding: 2px 8px;
+          border-radius: $radius-pill;
+          font-size: $font-size-xs;
+          font-weight: $font-weight-semibold;
+
+          &.role-admin { background: $error-light; color: $error-800; }
+          &.role-seller { background: $warning-light; color: $warning-800; }
+          &.role-user { background: $primary-100; color: $primary-800; }
+        }
+      }
+
+      .actions {
+        display: flex;
+        justify-content: flex-end;
+
+        .btn-icon {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          border: none;
+          background: $bg-secondary;
+          color: $error-600;
+          cursor: pointer;
+          @include flex-center;
+          transition: background $transition-fast;
+
+          &:hover:not(:disabled) {
+            background: $error-50;
+          }
+
+          &:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+
+    @media (max-width: $breakpoint-md) {
+      .table-header {
+        display: none;
+      }
+
+      .table-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+
+        .email::before { content: 'Email: '; color: $text-tertiary; }
+        .joined::before { content: 'Ngày tham gia: '; color: $text-tertiary; }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

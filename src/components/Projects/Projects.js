@@ -72,8 +72,7 @@ const Projects = () => {
     const statusMap = {
       PENDING: { label: 'Chờ bắt đầu', className: 'status-pending' },
       ACTIVE: { label: 'Đang diễn ra', className: 'status-active' },
-      // THAY ĐỔI 4: Đồng bộ 'ENDED' (từ backend) với 'COMPLETED' (trong code cũ)
-      ENDED: { label: 'Đã kết thúc', className: 'status-ended' }, 
+      COMPLETED: { label: 'Đã kết thúc', className: 'status-completed' },
       CANCELLED: { label: 'Đã hủy', className: 'status-cancelled' },
     };
     
@@ -145,7 +144,7 @@ const Projects = () => {
                   <i className="fas fa-dollar-sign"></i>
                   <div>
                     <span className="info-label">Giá khởi điểm</span>
-                    <span className="info-value">{formatCurrency(auction.startingPrice)}</span>
+                    <span className="info-value">{formatCurrency(auction.product?.initialPrice)}</span>
                   </div>
                 </div>
                 <div className="info-item">
@@ -161,14 +160,13 @@ const Projects = () => {
                 <div className="bid-info">
                   <span className="current-bid-label">Giá hiện tại</span>
                   <span className="current-bid-amount">
-                    {formatCurrency(auction.currentPrice || auction.startingPrice)}
+                    {formatCurrency(auction.currentPrice || auction.product?.initialPrice)}
                   </span>
                 </div>
-                <button 
+                <button
                   className="project-btn"
                   onClick={() => handleViewDetails(auction.id)}
-                  // THAY ĐỔI 5: Đồng bộ 'ENDED'
-                  disabled={auction.status === 'ENDED' || auction.status === 'CANCELLED'}
+                  disabled={auction.status === 'COMPLETED' || auction.status === 'CANCELLED'}
                 >
                   {auction.status === 'ACTIVE' ? (
                     <>
