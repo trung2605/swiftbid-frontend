@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import auctionService from '../../services/auctionService';
 import bidService from '../../services/bidService';
 import { subscribeToAuction } from '../../services/websocketService';
@@ -16,7 +17,7 @@ import remarkGfm from 'remark-gfm';
 const AuctionDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   const [auction, setAuction] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,8 +75,21 @@ const AuctionDetailPage = () => {
   // FR-BID-05: live-update the price/bid-count without requiring a page reload.
   useEffect(() => {
     const unsubscribe = subscribeToAuction(id, (update) => {
-      setAuction((prev) =>
-        prev
+      setAuction((prev) => {
+        // If I was the highest bidder and someone else just took the lead, let me know —
+        // without this, the price on screen would just silently change under me.
+        const iWasWinning = prev?.currentHighestBidder?.username === user?.username;
+        const someoneElseNowWinning = update.currentHighestBidderUsername
+          && update.currentHighestBidderUsername !== user?.username;
+        if (iWasWinning && someoneElseNowWinning) {
+          toast.warn(
+            `Bạn đã bị vượt giá! Giá mới: ${new Intl.NumberFormat('vi-VN', {
+              style: 'currency', currency: 'VND',
+            }).format(update.currentHighestBidAmount)}`
+          );
+        }
+
+        return prev
           ? {
               ...prev,
               currentHighestBidAmount: update.currentHighestBidAmount,
@@ -83,12 +97,12 @@ const AuctionDetailPage = () => {
                 ? { username: update.currentHighestBidderUsername }
                 : prev.currentHighestBidder,
             }
-          : prev
-      );
+          : prev;
+      });
       fetchBidHistory();
     });
     return unsubscribe;
-  }, [id, fetchBidHistory]);
+  }, [id, fetchBidHistory, user?.username]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('vi-VN', {

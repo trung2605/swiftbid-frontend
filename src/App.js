@@ -12,6 +12,7 @@ import AuctionDetailPage from './pages/AuctionDetailPage/AuctionDetailPage';
 import MyProductsPage from './pages/MyProductsPage/MyProductsPage';
 import MyAuctionsPage from './pages/MyAuctionsPage/MyAuctionsPage';
 import MyBidsPage from './pages/MyBidsPage/MyBidsPage';
+import AdminPage from './pages/AdminPage/AdminPage';
 import LoginPage from './pages/LoginPage/LoginPage';
 import RegisterPage from './pages/RegisterPage/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage/ForgotPasswordPage';
@@ -39,6 +40,7 @@ function App() {
             <Route path="my-products" element={<MyProductsPage />} />
             <Route path="my-auctions" element={<MyAuctionsPage />} />
             <Route path="my-bids" element={<MyBidsPage />} />
+            <Route path="admin" element={<AdminPage />} />
             <Route path="create-auction" element={<CreateAuctionPage />} />
             <Route path="auctions" element={<AuctionsPage />} />
             <Route path="auctions/:id" element={<AuctionDetailPage />} />

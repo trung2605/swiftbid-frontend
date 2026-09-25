@@ -141,7 +141,23 @@ const auctionService = {
       console.error('Error fetching featured auctions:', error);
       throw error;
     }
-  }
+  },
+
+  /**
+   * Server-side filter/sort/paginate (FR-AUC-02) — used by AuctionsPage instead of
+   * downloading every auction and slicing it client-side.
+   * @param {{status?:string, category?:string, q?:string, sort?:string, page?:number, size?:number}} params
+   * @returns {Promise<{content:Array, page:number, size:number, totalElements:number, totalPages:number}>}
+   */
+  searchAuctions: async (params) => {
+    try {
+      const response = await apiClient.get(`${API_BASE_URL}/search`, { params });
+      return response.data;
+    } catch (error) {
+      console.error('Error searching auctions:', error);
+      throw error;
+    }
+  },
 
 };
 

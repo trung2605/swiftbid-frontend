@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Header from '../Header/Header';
 import Navigation from '../../components/Navigation/Navigation';
 import Footer from '../../components/Footer/Footer';
@@ -43,6 +45,7 @@ const MainLayout = ({ showSidebar = false }) => {
       </div>
 
       <Footer />
+      <ToastContainer position="bottom-right" autoClose={5000} newestOnTop />
     </div>
   );
 };

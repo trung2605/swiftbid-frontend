@@ -190,6 +190,19 @@ const Navigation = () => {
                     <i className="fas fa-history"></i>
                     <span>My Bids</span>
                   </Link>
+                  {roles.includes('ADMIN') && (
+                    <Link
+                      to="/admin"
+                      className="dropdown-item"
+                      onClick={() => {
+                        setIsDropdownOpen(false);
+                        setIsMenuOpen(false);
+                      }}
+                    >
+                      <i className="fas fa-user-shield"></i>
+                      <span>Admin</span>
+                    </Link>
+                  )}
                   <div className="dropdown-divider"></div>
                   <button 
                     className="dropdown-item logout-btn"
